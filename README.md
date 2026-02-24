@@ -1,124 +1,131 @@
-# SouqSync
+# SoukSync
 
-> **Marketplace sync and operations platform.**  
-> *(This README is a living document and will be updated as the project evolves.)*
-
----
-
-## Overview
-
-SouqSync is a product and codebase for syncing, managing, and operating marketplace and multi-channel commerce workflows. The project is governed by an **EPIC** (product/requirements) source of truth and uses structured memory and agent rules for consistency and continuity.
-
-**Status:** Early stage / in development.  
-**Repository:** (Add link when published.)
-
----
-
-## What’s in This Repo
-
-- **Application code** — Backend (FastAPI) and frontends (React dashboard, Flutter mobile, WhatsApp bot) for the SouqSync product.
-- **EPIC alignment** — Requirements, data model, API specs, and user stories are defined in EPIC and referenced by agents and docs.
-- **Agent and tooling config** — Cursor/Windsurf rules, skills, and MCP usage (see [AGENTS.md](#agents-and-ai) below). *Note: `AGENTS.md` and `Docs/` are gitignored by default; adjust `.gitignore` if you want them tracked.*
-
----
-
-## Quick Start
-
-*(To be filled: prerequisites, clone, env setup, migrations, seeders, run backend/frontend.)*
-
-```bash
-# Example – update with real commands
-# git clone <repo-url>
-# cd SouqSync
-# Backend: uv sync (or pip install -r requirements.txt), cp .env.example .env, alembic upgrade head
-# uvicorn main:app --reload  # or python -m app.main
-# Frontend: npm install && npm run dev (React dashboard)
-```
+> Asset-light B2B FMCG marketplace and embedded BNPL platform for Ethiopia's informal retail network.
 
 ---
 
 ## Tech Stack
 
-*(Summarise from EPIC/getTechStack and update as locked in.)*
-
-| Layer      | Technology |
-|-----------|------------|
-| Backend   | Python 3.11+, FastAPI, SQLAlchemy 2.0 |
-| Frontend  | React (dashboard), Flutter (mobile), WhatsApp bot (webhook) |
-| API       | REST, OpenAPI/Swagger, async (uvicorn) |
-| Database  | PostgreSQL 16, Redis |
-| Workers   | Celery (background tasks) |
-| Tooling   | EPIC MCP (`epic-souksync`), Cursor/Windsurf |
-
----
+| Layer | Technology |
+|-------|------------|
+| Backend | Python 3.9+, FastAPI, SQLAlchemy 2.0 (async), PostgreSQL 16, Redis 7 |
+| Web Dashboard | React 18, TypeScript, Vite, TailwindCSS, Zustand, TanStack Query |
+| Mobile | Flutter 3.10+, Riverpod, Clean Architecture, Hive (offline) |
+| Integrations | Telegram Bot API, M-Pesa, Telebirr |
+| CI | GitHub Actions |
 
 ## Project Structure
 
-*(Outline main directories; expand later.)*
-
 ```
 SouqSync/
-├── backend/          # FastAPI app (api/, core/, db/, main.py, etc.)
-├── frontend/         # React dashboard (or equivalent)
-├── mobile/           # Flutter app (if present)
-├── docs/ or Docs/    # Design, SRS, memory-bank (gitignored by default)
-├── .cursor/          # Cursor rules and skills (gitignored by default)
-├── .gitignore
-└── README.md         # This file
+├── backend/            # FastAPI (port 8020)
+│   ├── app/            # Application code (api/, core/, models/, services/, etc.)
+│   ├── tests/          # pytest (unit + integration)
+│   ├── alembic/        # Database migrations
+│   └── pyproject.toml
+├── web/                # React dashboard (port 5175)
+│   ├── src/            # Features, shared, routes, stores
+│   └── package.json
+├── mobile/             # Flutter app
+│   ├── lib/            # Clean Architecture (core/, features/, l10n/)
+│   └── pubspec.yaml
+├── docker-compose.yml  # PostgreSQL 16, Redis 7, backend
+├── .github/workflows/  # CI for backend, web, mobile
+├── CONTRIBUTING.md     # Branch strategy, local setup
+└── Docs/               # Guidelines, SRS, backlog (gitignored)
 ```
 
-*(See `Docs/BACKEND_GUIDELINES.md` for FastAPI structure; add more detail as the codebase grows.)*
+## Quick Start
 
----
+### 1. Start infrastructure
 
-## Configuration and Environment
+```bash
+docker compose up -d db redis
+```
 
-- Copy `.env.example` to `.env` and set:
-  - App key, debug, log level
-  - Database connection and credentials
-  - Any queue, cache, and external service keys (e.g. marketplaces, EPIC API if used at runtime)
-- Do not commit `.env` or secrets. See `.gitignore`.
+### 2. Backend (port 8020)
 
----
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+cp .env.example .env
+# Run migrations (first time)
+PYTHONPATH=. alembic upgrade head
+# Seed sample data (first time)
+PYTHONPATH=. python -m app.db.seed
+uvicorn app.main:app --host 0.0.0.0 --port 8020 --reload
+```
 
-## Development Workflow
+**Note:** If port 5432 is in use, the DB runs on 5433. See `.env.example` for `DATABASE_URL`.
 
-1. **EPIC first** — For data model, APIs, and user stories, follow the EPIC data model, API specs, and user stories (via MCP or exported docs).
-2. **Conventions** — FastAPI (async, `Depends()`, Pydantic); see `Docs/BACKEND_GUIDELINES.md`. Frontend: React (dashboard), Flutter (mobile).
-3. **Testing** — *(Add: how to run PHPUnit, frontend tests, and any E2E.)*
-4. **Branching / PRs** — *(Add: main vs develop, PR rules, Jira linkage if used.)*
+API docs (Swagger): http://localhost:8020/docs
 
----
+**Try in Swagger:** `POST /api/v1/webhooks/telegram` — use "Try it out", set Request body to:
+```json
+{"update_id": 123456789, "message": {"message_id": 1, "from": {"id": 111, "first_name": "Test"}, "chat": {"id": 111, "type": "private"}, "text": "Hello"}}
+```
+Expect `200` and `{"ok": true}`; check backend logs for `telegram_update`.  
+**Note:** The Telegram bot is not *active* until you set the token and webhook. **→ Step-by-step:** [Docs/ACTIVATE_TELEGRAM_BOT_STEPS.md](Docs/ACTIVATE_TELEGRAM_BOT_STEPS.md) (BotFather, token, HTTPS, setWebhook, test).
 
-## Agents and AI
+### 3. Web dashboard (port 5175)
 
-This project uses:
+```bash
+cd web
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-- **EPIC MCP server** (`epic-souksync`) for project overview, PRD, tech stack, data model, API specs, user stories, and diagrams.
-- **EPIC Memory Bank** for persistent context (getMemories, searchMemoriesSemantic, saveMemory, etc.).
-- **Cursor (and optionally Windsurf)** with rules and skills that enforce EPIC checks and memory usage.
+Open http://localhost:5175
 
-Agent-facing rules and detailed instructions live in **AGENTS.md**. That file is currently listed in `.gitignore`; if you want it in version control, remove `AGENTS.md` from `.gitignore`.
+### 4. Mobile (optional, requires Flutter)
 
----
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
+
+### Or all via Docker
+
+```bash
+docker compose up
+# Backend at http://localhost:8020
+```
+
+## Ports
+
+| Service | Port |
+|---------|------|
+| Backend API | 8020 |
+| (Reserved) | 8021 |
+| Web dev server | 5175 |
+| PostgreSQL | 5433 (or 5432 if 5433 in use) |
+| Redis | 6379 |
+
+All ports are configurable via environment variables (see `.env.example` files).
+
+## Running Tests
+
+```bash
+# Backend
+cd backend && pytest -v
+
+# Web
+cd web && npx vitest run
+
+# Mobile
+cd mobile && flutter test
+```
 
 ## Documentation
 
-- **In-repo** — This README; add architecture, API, and runbooks under a `docs/` or `Docs/` folder as needed. *(Note: `Docs/` and `docs/` are in `.gitignore` by default.)*
-- **EPIC** — Product and technical context (PRD, data model, API specs, user stories) are the source of truth; sync key decisions back into EPIC memory and docs when relevant.
+- [BACKEND_GUIDELINES.md](Docs/BACKEND_GUIDELINES.md) — Architecture, API design, TDD
+- [FRONTEND_GUIDELINES.md](Docs/FRONTEND_GUIDELINES.md) — Components, state, testing
+- [MOBILE_GUIDELINES.md](Docs/MOBILE_GUIDELINES.md) — Clean Architecture, offline-first
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Branch strategy, workflow
 
----
+## License
 
-## Contributing and License
-
-*(To be added: contribution guidelines, code of conduct, license.)*
-
----
-
-## Changelog and Roadmap
-
-*(Link or summarise: roadmap, releases, and a changelog if maintained.)*
-
----
-
-*Last updated: placeholder. Update this README as the project and setup steps are finalised.*
+Private. All rights reserved.

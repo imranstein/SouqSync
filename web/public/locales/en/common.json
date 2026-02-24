@@ -1,0 +1,9 @@
+{
+  "appName": "SoukSync",
+  "dashboard": "Dashboard",
+  "login": "Login",
+  "logout": "Logout",
+  "inventory": "Inventory",
+  "orders": "Orders",
+  "loading": "Loading..."
+}

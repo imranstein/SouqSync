@@ -4,13 +4,15 @@
 .windsurf/
 .env
 .env.*
+!.env.example
+!.env.server.example
 !.gitignore
 
 # Documentation (local / generated)
 Docs/
 docs/
 
-# Agent / IDE rules (optional: remove if you want these tracked)
+# Agent / IDE rules
 AGENTS.md
 
 # OS and editor
@@ -23,8 +25,6 @@ Thumbs.db
 # Dependencies and build
 node_modules/
 vendor/
-.env.local
-.env.*.local
 *.log
 
 # IDE
@@ -32,8 +32,41 @@ vendor/
 .vscode/
 *.sublime-*
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+*.pyo
+
+# Node / React
+web/node_modules/
+web/dist/
+web/coverage/
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# Docker
+*.pid
+
 # Misc
 dist/
 build/
 coverage/
 .cache/
+tmp/

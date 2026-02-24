@@ -1,0 +1,66 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+  pull_request:
+    paths:
+      - 'backend/**'
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: souksync
+          POSTGRES_PASSWORD: souksync
+          POSTGRES_DB: souksync
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U souksync"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (Ruff)
+        run: ruff check .
+
+      - name: Type check (mypy)
+        run: mypy app --ignore-missing-imports
+
+      - name: Test (pytest)
+        env:
+          DATABASE_URL: postgresql+asyncpg://souksync:souksync@localhost:5432/souksync
+          REDIS_URL: redis://localhost:6379/0
+        run: pytest --cov=app --cov-report=term-missing
