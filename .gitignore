@@ -1,0 +1,39 @@
+# Dotfiles / dot-directories
+.cursor/
+.agent/
+.windsurf/
+.env
+.env.*
+!.gitignore
+
+# Documentation (local / generated)
+Docs/
+docs/
+
+# Agent / IDE rules (optional: remove if you want these tracked)
+AGENTS.md
+
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Dependencies and build
+node_modules/
+vendor/
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Misc
+dist/
+build/
+coverage/
+.cache/
