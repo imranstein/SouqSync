@@ -1,46 +1,149 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/auth-context';
+import { get } from '../lib/api';
 
-interface KpiCard {
-  label: string;
-  value: string;
-  change: string;
-  positive: boolean;
-  icon: React.ReactNode;
+interface Product {
+  id: string;
+  name: string;
+  sku: string | null;
+  price: string;
+  category: string | null;
+  distributor_id: string;
+  is_active: boolean;
+  created_at: string;
 }
 
-const MOCK_KPIS: KpiCard[] = [
-  {
-    label: 'Orders Today',
-    value: '47',
-    change: '+12%',
-    positive: true,
-    icon: <ShoppingBagIcon />,
-  },
-  {
-    label: 'Pending Orders',
-    value: '8',
-    change: '-3',
-    positive: true,
-    icon: <ClockIcon />,
-  },
-  {
-    label: 'Revenue (ETB)',
-    value: '128,450',
-    change: '+23%',
-    positive: true,
-    icon: <CurrencyIcon />,
-  },
-  {
-    label: 'Active Products',
-    value: '312',
-    change: '+5',
-    positive: true,
-    icon: <BoxIcon />,
-  },
-];
+interface ProductListResponse {
+  items: Product[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+interface OrderItem {
+  id: string;
+  product_id: string;
+  product_name: string | null;
+  quantity: number;
+  unit_price: string;
+}
+
+interface Order {
+  id: string;
+  user_id: string;
+  distributor_id: string;
+  status: string;
+  total: string;
+  delivery_fee: string;
+  payment_method: string | null;
+  items: OrderItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+interface OrderListResponse {
+  items: Order[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+interface CreditLimit {
+  credit_limit: number;
+  available_credit: number;
+}
+
+type OrderStatus = 'pending' | 'confirmed' | 'in_transit' | 'delivered' | 'cancelled';
+
+const STATUS_STYLES: Record<OrderStatus, string> = {
+  delivered: 'bg-green-50 text-green-700',
+  pending: 'bg-yellow-50 text-yellow-700',
+  confirmed: 'bg-yellow-50 text-yellow-700',
+  in_transit: 'bg-blue-50 text-blue-700',
+  cancelled: 'bg-red-50 text-red-700',
+};
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  in_transit: 'In Transit',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('en-ET', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<ProductListResponse | null>(null);
+  const [orders, setOrders] = useState<OrderListResponse | null>(null);
+  const [credit, setCredit] = useState<CreditLimit | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchAll() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [productsRes, ordersRes, creditRes] = await Promise.all([
+          get<ProductListResponse>('/products'),
+          get<OrderListResponse>('/orders'),
+          get<CreditLimit>('/credit/limit').catch(() => null),
+        ]);
+        if (cancelled) return;
+        setProducts(productsRes);
+        setOrders(ordersRes);
+        setCredit(creditRes);
+      } catch (err: unknown) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchAll();
+    return () => { cancelled = true; };
+  }, []);
+
+  const pendingCount = orders?.items.filter((o) => o.status === 'pending').length ?? 0;
+  const totalRevenue = orders?.items.reduce((sum, o) => sum + parseFloat(o.total || '0'), 0) ?? 0;
+  const recentOrders = orders?.items
+    .slice()
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5) ?? [];
+
+  const kpis = [
+    {
+      label: 'Total Products',
+      value: products?.total.toString() ?? '—',
+      icon: <BoxIcon />,
+    },
+    {
+      label: 'Pending Orders',
+      value: pendingCount.toString(),
+      icon: <ClockIcon />,
+    },
+    {
+      label: 'Total Revenue (ETB)',
+      value: orders ? formatCurrency(totalRevenue) : '—',
+      icon: <CurrencyIcon />,
+    },
+    {
+      label: 'Credit Available (ETB)',
+      value: credit ? formatCurrency(credit.available_credit) : '—',
+      icon: <ShoppingBagIcon />,
+    },
+  ];
 
   return (
     <div>
@@ -54,48 +157,130 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* KPI Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {MOCK_KPIS.map((kpi) => (
+        {kpis.map((kpi) => (
           <div
             key={kpi.label}
             className="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition hover:shadow-md"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                {kpi.icon}
-              </div>
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  kpi.positive
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-700'
-                }`}
-              >
-                {kpi.change}
-              </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              {kpi.icon}
             </div>
-            <p className="mt-4 text-2xl font-bold text-dark">{kpi.value}</p>
+            {loading ? (
+              <div className="mt-4 h-7 w-20 animate-pulse rounded bg-gray-100" />
+            ) : (
+              <p className="mt-4 text-2xl font-bold text-dark">{kpi.value}</p>
+            )}
             <p className="mt-1 text-sm text-gray-500">{kpi.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Quick Actions / Recent Activity placeholder */}
+      {/* Widgets */}
       <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* Recent Orders */}
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
           <h2 className="mb-4 text-lg font-semibold text-dark">Recent Orders</h2>
-          <div className="flex flex-col items-center py-8 text-gray-400">
-            <ShoppingBagIcon />
-            <p className="mt-2 text-sm">Order data will appear here once the backend is connected.</p>
-          </div>
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-50" />
+              ))}
+            </div>
+          ) : recentOrders.length === 0 ? (
+            <div className="flex flex-col items-center py-8 text-gray-400">
+              <ShoppingBagIcon />
+              <p className="mt-2 text-sm">No orders yet.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead>
+                  <tr>
+                    <th className="pb-2 text-left text-xs font-medium uppercase text-gray-400">ID</th>
+                    <th className="pb-2 text-left text-xs font-medium uppercase text-gray-400">Status</th>
+                    <th className="pb-2 text-right text-xs font-medium uppercase text-gray-400">Total</th>
+                    <th className="pb-2 text-right text-xs font-medium uppercase text-gray-400">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {recentOrders.map((o) => {
+                    const status = o.status as OrderStatus;
+                    return (
+                      <tr key={o.id}>
+                        <td className="py-2.5 pr-3 text-sm font-mono text-dark">
+                          {o.id.slice(0, 8)}
+                        </td>
+                        <td className="py-2.5 pr-3">
+                          <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[status] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {STATUS_LABELS[status] ?? o.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right text-sm text-gray-700">
+                          {formatCurrency(parseFloat(o.total || '0'))}
+                        </td>
+                        <td className="py-2.5 text-right text-sm text-gray-500">
+                          {new Date(o.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
+
+        {/* Product Catalog */}
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h2 className="mb-4 text-lg font-semibold text-dark">Low Stock Alerts</h2>
-          <div className="flex flex-col items-center py-8 text-gray-400">
-            <BoxIcon />
-            <p className="mt-2 text-sm">Stock alerts will appear here once inventory is synced.</p>
-          </div>
+          <h2 className="mb-4 text-lg font-semibold text-dark">Product Catalog</h2>
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-50" />
+              ))}
+            </div>
+          ) : !products || products.items.length === 0 ? (
+            <div className="flex flex-col items-center py-8 text-gray-400">
+              <BoxIcon />
+              <p className="mt-2 text-sm">No products yet.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead>
+                  <tr>
+                    <th className="pb-2 text-left text-xs font-medium uppercase text-gray-400">Name</th>
+                    <th className="pb-2 text-left text-xs font-medium uppercase text-gray-400">Category</th>
+                    <th className="pb-2 text-right text-xs font-medium uppercase text-gray-400">Price (ETB)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {products.items.slice(0, 8).map((p) => (
+                    <tr key={p.id}>
+                      <td className="py-2.5 pr-3 text-sm font-medium text-dark">{p.name}</td>
+                      <td className="py-2.5 pr-3 text-sm text-gray-500">{p.category ?? '—'}</td>
+                      <td className="py-2.5 text-right text-sm text-gray-700">
+                        {formatCurrency(parseFloat(p.price || '0'))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {products.total > 8 && (
+                <p className="mt-3 text-center text-xs text-gray-400">
+                  Showing 8 of {products.total} products
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
