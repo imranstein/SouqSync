@@ -19,7 +19,7 @@ This document records the **Stitch** (stitch.withgoogle.com) project and the exa
 
 - **Product:** Asset-light B2B FMCG marketplace + embedded BNPL for Ethiopia & East Africa.
 - **Users:** Kiosk (souk) owners, distributors. High-glare, fast intuitive interfaces, minimal text.
-- **Brand:** Financial dignity + logistical reliability. Colors: energetic orange + institutional navy.
+- **Brand:** Financial dignity + logistical reliability. Colors: teal/slate palette (current implementation uses TEAL_600/SLATE_900, not navy/orange from historical Stitch prompts).
 - **UI/UX (from PDF Section B):** Vibrant, highly visual, energetic, trustworthy. High-contrast Credit Health card, visual product catalog, prominent 1-Click Restock (navy), bold legible typography.
 
 ---
@@ -33,7 +33,7 @@ This document records the **Stitch** (stitch.withgoogle.com) project and the exa
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating, animation-ready desktop LANDING PAGE for 'SoukSync', an asset-light B2B fast-moving consumer goods marketplace and embedded Buy-Now-Pay-Later (BNPL) platform for Ethiopia and East Africa.
 
 **Brand (from strategy):** Financial dignity and logistical reliability. Color palette: institutional navy blue (#1B2A4A) as primary, energetic orange (#FF6B35) as accent. Typography: bold, legible, distinctive—use a strong display font for headlines and a clean sans-serif for body. Tone: vibrant, highly visual, energetic, trustworthy.
@@ -60,7 +60,7 @@ Design a modern, captivating, animation-ready desktop LANDING PAGE for 'SoukSync
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating DESKTOP DASHBOARD for 'SoukSync', the B2B FMCG marketplace and BNPL platform for Ethiopia. This is the main dashboard a kiosk owner or distributor sees after sign-in.
 
 **Brand:** Same as landing—institutional navy (#1B2A4A), energetic orange (#FF6B35). Bold, legible typography. Vibrant, trustworthy, professional.
@@ -90,7 +90,7 @@ Design a modern, captivating DESKTOP DASHBOARD for 'SoukSync', the B2B FMCG mark
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating DESKTOP **Credit & BNPL** page for 'SoukSync', the B2B FMCG marketplace and BNPL platform for Ethiopia. This is the screen where kiosk owners see their Buy Now Pay Later credit and repayment status.
 
 **Brand:** Institutional navy (#1B2A4A), energetic orange (#FF6B35). Bold, legible typography. Vibrant, trustworthy. (From DESIGN.md)
@@ -116,7 +116,7 @@ Design for data-driven placeholders. Animation-ready. High contrast, scannable.
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating DESKTOP **Inventory / Product catalog** page for 'SoukSync', the B2B FMCG marketplace for Ethiopia. This is where kiosk owners or distributors browse and manage products.
 
 **Brand:** Institutional navy (#1B2A4A), energetic orange (#FF6B35). Bold, legible typography. Vibrant, trustworthy. (From DESIGN.md)
@@ -137,7 +137,7 @@ Design for data-driven placeholders. Animation-ready. Dense but clear hierarchy.
 
 From **SoukSync Strategic Assessment**, Section B — UI/UX Design Generation (target: Google Stitch):
 
-```
+```text
 Context: Design a mobile app screen for 'SoukSync', a B2B supply chain and micro-credit application.
 User: Informal retail kiosk (souk) owners in Ethiopia who operate in high-glare outdoor environments and require fast, intuitive interfaces with minimal text reading.
 Goal of the screen: Allow the user to quickly view their available 'Buy Now, Pay Later' credit limit, browse available fast-moving consumer goods, and place a restock order with one tap.

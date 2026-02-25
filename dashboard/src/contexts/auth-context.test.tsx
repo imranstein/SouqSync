@@ -1,23 +1,36 @@
+/**
+ * Tests for AuthContext.
+ *
+ * AuthContext provides authentication state management, including OTP request,
+ * verification, user data fetching, and logout functionality.
+ */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAuth, AuthProvider } from './auth-context';
 import * as api from '../lib/api';
 
-vi.mock('../lib/api', () => ({
-  post: vi.fn(),
-  get: vi.fn(),
-  setTokens: vi.fn(),
-  getAccessToken: vi.fn(),
-  clearTokens: vi.fn(),
-  ApiError: class ApiError extends Error {
+// Shared ApiError class definition (matches ../test/mocks/api.ts)
+// Defined inline here because vi.mock is hoisted and cannot import from other modules
+vi.mock('../lib/api', () => {
+  class ApiError extends Error {
     status: number;
     constructor(status: number, message: string) {
       super(message);
       this.status = status;
       this.name = 'ApiError';
     }
-  },
-}));
+  }
+
+  return {
+    post: vi.fn(),
+    get: vi.fn(),
+    setTokens: vi.fn(),
+    getAccessToken: vi.fn(),
+    clearTokens: vi.fn(),
+    ApiError,
+  };
+});
 
 function renderAuthHook() {
   return renderHook(() => useAuth(), {

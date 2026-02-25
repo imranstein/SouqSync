@@ -1,25 +1,38 @@
+/**
+ * Tests for AuthGuard component.
+ *
+ * AuthGuard protects routes by checking authentication state and redirecting
+ * unauthenticated users to the login page.
+ */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import AuthGuard from './auth-guard';
 import { AuthProvider } from '../contexts/auth-context';
 import * as api from '../lib/api';
 
-vi.mock('../lib/api', () => ({
-  post: vi.fn(),
-  get: vi.fn(),
-  setTokens: vi.fn(),
-  getAccessToken: vi.fn(),
-  clearTokens: vi.fn(),
-  ApiError: class ApiError extends Error {
+// Shared ApiError class definition (matches ../test/mocks/api.ts)
+// Defined inline here because vi.mock is hoisted and cannot import from other modules
+vi.mock('../lib/api', () => {
+  class ApiError extends Error {
     status: number;
     constructor(status: number, message: string) {
       super(message);
       this.status = status;
       this.name = 'ApiError';
     }
-  },
-}));
+  }
+
+  return {
+    post: vi.fn(),
+    get: vi.fn(),
+    setTokens: vi.fn(),
+    getAccessToken: vi.fn(),
+    clearTokens: vi.fn(),
+    ApiError,
+  };
+});
 
 function renderWithProviders(ui: React.ReactElement, initialEntries = ['/']) {
   return render(
@@ -58,11 +71,10 @@ describe('AuthGuard', () => {
       </AuthGuard>,
     );
 
-    // Wait for auth check to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Should redirect (Navigate component changes location)
-    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    // Wait for auth check to complete and redirect
+    await waitFor(() => {
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    });
   });
 
   it('renders children when authenticated', async () => {
@@ -82,10 +94,10 @@ describe('AuthGuard', () => {
       </AuthGuard>,
     );
 
-    // Wait for auth check to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    // Wait for auth check to complete and content to render
+    await waitFor(() => {
+      expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    });
   });
 
   it('handles authentication failure gracefully', async () => {
@@ -98,10 +110,9 @@ describe('AuthGuard', () => {
       </AuthGuard>,
     );
 
-    // Wait for auth check to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Should redirect after auth failure
-    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    // Wait for auth check to complete and redirect after failure
+    await waitFor(() => {
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    });
   });
 });

@@ -50,6 +50,7 @@
   66% { transform: translate(-1%, 1%) scale(0.98); opacity: 0.35; }
 }
 
+/* shine keyframe reserved for future use (e.g., shimmer effects on loading cards) */
 @keyframes shine {
   0% { left: -100%; }
   100% { left: 100%; }
