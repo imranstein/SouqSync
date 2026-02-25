@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 /* Modern palette using teal and slate colors. */
@@ -47,9 +46,6 @@ const steps = [
 ]
 
 export default function LandingPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   return (
     <div
       className="min-h-screen overflow-x-hidden antialiased"
@@ -59,10 +55,10 @@ export default function LandingPage() {
       <header
         className="sticky top-0 z-50 transition-all duration-300"
         style={{
-          backgroundColor: mounted ? 'rgba(250, 250, 250, 0.8)' : 'transparent',
-          backdropFilter: mounted ? 'saturate(180%) blur(12px)' : 'none',
-          WebkitBackdropFilter: mounted ? 'saturate(180%) blur(12px)' : 'none',
-          borderBottom: mounted ? `1px solid ${BORDER}` : 'none',
+          backgroundColor: 'rgba(250, 250, 250, 0.8)',
+          backdropFilter: 'saturate(180%) blur(12px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(12px)',
+          borderBottom: `1px solid ${BORDER}`,
         }}
       >
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">

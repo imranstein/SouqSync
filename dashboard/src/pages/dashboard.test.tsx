@@ -94,8 +94,10 @@ function createApiMock(
       return Promise.resolve(dashboardData.credit ?? { credit_limit: 0, available_credit: 0 });
     }
 
-    // Default fallback
-    return Promise.resolve({ items: [], total: 0, page: 1, per_page: 20 });
+    // Fail fast for unknown paths to catch regressions
+    return Promise.reject(
+      new api.ApiError(404, `Unhandled API path in test mock: ${path}`),
+    );
   });
 }
 
@@ -301,9 +303,21 @@ describe('DashboardPage', () => {
   });
 
   it('shows empty state when no orders', async () => {
+    // Test isolates the "no orders" scenario: products exist, orders are empty
     const mockProducts = {
-      items: [],
-      total: 0,
+      items: [
+        {
+          id: 'p1',
+          name: 'Product A',
+          sku: 'SKU-A',
+          price: '99.00',
+          category: 'beverages',
+          distributor_id: 'd1',
+          is_active: true,
+          created_at: createDateString(),
+        },
+      ],
+      total: 1,
       page: 1,
       per_page: 20,
     };
@@ -331,6 +345,7 @@ describe('DashboardPage', () => {
   });
 
   it('shows empty state when no products', async () => {
+    // Test isolates the "no products" scenario: orders exist, products are empty
     const mockProducts = {
       items: [],
       total: 0,
@@ -339,8 +354,21 @@ describe('DashboardPage', () => {
     };
 
     const mockOrders = {
-      items: [],
-      total: 0,
+      items: [
+        {
+          id: 'o1',
+          user_id: 'u1',
+          distributor_id: 'd1',
+          status: 'pending',
+          total: '250.00',
+          delivery_fee: '10.00',
+          payment_method: 'cash',
+          items: [],
+          created_at: createDateString(),
+          updated_at: createDateString(),
+        },
+      ],
+      total: 1,
       page: 1,
       per_page: 20,
     };
