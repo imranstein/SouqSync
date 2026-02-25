@@ -19,7 +19,7 @@ This document records the **Stitch** (stitch.withgoogle.com) project and the exa
 
 - **Product:** Asset-light B2B FMCG marketplace + embedded BNPL for Ethiopia & East Africa.
 - **Users:** Kiosk (souk) owners, distributors. High-glare, fast intuitive interfaces, minimal text.
-- **Brand:** Financial dignity + logistical reliability. Colors: energetic orange + institutional navy.
+- **Brand:** Financial dignity + logistical reliability. Colors: teal/slate palette (current implementation uses TEAL_600/SLATE_900, not navy/orange from historical Stitch prompts).
 - **UI/UX (from PDF Section B):** Vibrant, highly visual, energetic, trustworthy. High-contrast Credit Health card, visual product catalog, prominent 1-Click Restock (navy), bold legible typography.
 
 **Note on color palette:** The Stitch prompts below reference the original brand colors (institutional navy #1B2A4A and energetic orange #FF6B35) from the strategic assessment. However, the actual landing page implementation (`web/src/pages/LandingPage.tsx`) uses a teal/slate palette (TEAL_600 #0d9488, SLATE_900 #0f172a) for a modern, refined aesthetic. The Stitch prompts serve as design reference documentation and may differ from the final implementation.
@@ -147,7 +147,7 @@ Design for data-driven placeholders. Animation-ready. Dense but clear hierarchy.
 
 From **SoukSync Strategic Assessment**, Section B — UI/UX Design Generation (target: Google Stitch):
 
-```
+```text
 Context: Design a mobile app screen for 'SoukSync', a B2B supply chain and micro-credit application.
 User: Informal retail kiosk (souk) owners in Ethiopia who operate in high-glare outdoor environments and require fast, intuitive interfaces with minimal text reading.
 Goal of the screen: Allow the user to quickly view their available 'Buy Now, Pay Later' credit limit, browse available fast-moving consumer goods, and place a restock order with one tap.
