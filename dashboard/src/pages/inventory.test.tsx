@@ -241,5 +241,6 @@ describe('InventoryPage', () => {
     // Restore
     global.URL.createObjectURL = originalCreateObjectURL;
     global.URL.revokeObjectURL = originalRevokeObjectURL;
+    document.createElement = originalCreateElement as any;
   });
 });
