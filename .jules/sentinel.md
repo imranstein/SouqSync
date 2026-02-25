@@ -1,0 +1,4 @@
+## 2026-02-25 - [CRITICAL] OTP Brute Force Vulnerability
+**Vulnerability:** The OTP verification endpoint `verify_otp` lacked rate limiting or attempt tracking. An attacker could brute-force the 6-digit OTP within the 5-minute validity window.
+**Learning:** Even if `request_otp` has rate limiting (to prevent SMS spam), `verify_otp` must also have rate limiting (to prevent guessing). The default `redis.incr` does not reset TTL, so care must be taken to implement a sliding window or fixed window correctly. In-memory fallback logic must match Redis logic to avoid security gaps in dev/fallback modes.
+**Prevention:** Always implement rate limiting on sensitive verification endpoints. Use a shared counter for attempts and block after a threshold (e.g., 5 attempts). Ensure consistency between distributed (Redis) and local (memory) stores.

@@ -28,6 +28,7 @@ logger = structlog.get_logger(__name__)
 OTP_TTL_SECONDS = 300  # 5 minutes
 RATE_LIMIT_WINDOW = 900  # 15 minutes
 RATE_LIMIT_MAX = 3
+OTP_MAX_ATTEMPTS = 5
 
 # ── In-memory fallback when Redis is unavailable ──────────────────────
 _memory_store: dict[str, Any] = {}
@@ -112,24 +113,56 @@ async def verify_otp(phone: str, code: str, db: AsyncSession) -> User:
     """Validate OTP, create user if new, return user."""
     redis = await _get_redis()
     otp_key = f"otp:{phone}"
+    attempts_key = f"otp:attempts:{phone}"
 
     if redis:
+        # Check attempts
+        attempts = await redis.get(attempts_key)
+        if attempts and int(attempts) >= OTP_MAX_ATTEMPTS:
+            await redis.aclose()
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many failed attempts. Try again later.",
+            )
+
         stored_hash = await redis.get(otp_key)
         if stored_hash and stored_hash == hash_otp(code):
             await redis.delete(otp_key)
+            await redis.delete(attempts_key)
             await redis.aclose()
         else:
-            if redis:
-                await redis.aclose()
+            # Increment attempts
+            val = await redis.incr(attempts_key)
+            if val == 1:
+                await redis.expire(attempts_key, OTP_TTL_SECONDS)
+            await redis.aclose()
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired OTP",
             )
     else:
+        # Check attempts (in-memory)
+        attempts_entry = _memory_store.get(attempts_key)
+        current_attempts = 0
+        if attempts_entry:
+            val, expires_at = attempts_entry
+            if time.time() <= expires_at:
+                current_attempts = int(val)
+            else:
+                _memory_store.pop(attempts_key, None)
+
+        if current_attempts >= OTP_MAX_ATTEMPTS:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many failed attempts. Try again later.",
+            )
+
         stored_hash = _mem_get(otp_key)
         if stored_hash and stored_hash == hash_otp(code):
             _memory_store.pop(otp_key, None)
+            _memory_store.pop(attempts_key, None)
         else:
+            _mem_incr_with_ttl(attempts_key, OTP_TTL_SECONDS)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired OTP",
