@@ -7,12 +7,11 @@ from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
 from app.core.security import create_access_token
 from app.main import app
 from app.models.product import Product
 from app.models.user import User, UserRole
+from httpx import ASGITransport, AsyncClient
 
 
 def _make_token(role: str = "distributor", user_id: uuid.UUID | None = None) -> str:

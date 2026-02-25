@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +14,9 @@ from app.core.config import settings
 from app.core.exceptions import SoukSyncError
 from app.core.logging import setup_logging
 from app.core.middleware import RequestIdMiddleware, TimingMiddleware
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 @asynccontextmanager

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import uuid
-from decimal import Decimal
-from typing import TYPE_CHECKING, List, Optional
+import uuid  # noqa: TC003
+from decimal import Decimal  # noqa: TC003
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -20,13 +20,13 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "products"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    sku: Mapped[Optional[str]] = mapped_column(
+    sku: Mapped[str | None] = mapped_column(
         String(50), unique=True, nullable=True,
     )
     price: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=False,
     )
-    category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    category: Mapped[str | None] = mapped_column(String(50), nullable=True)
     distributor_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id"), nullable=False,
     )
@@ -37,7 +37,7 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     distributor: Mapped[User] = relationship(
         "User", back_populates="products", lazy="selectin",
     )
-    order_items: Mapped[List[OrderItem]] = relationship(
+    order_items: Mapped[list[OrderItem]] = relationship(
         "OrderItem", back_populates="product", lazy="selectin",
     )
 

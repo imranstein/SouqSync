@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get, put, ApiError } from '../lib/api';
+import { useI18n } from '../contexts/i18n-context';
 
 interface UserProfile {
   id: string;
@@ -12,12 +13,6 @@ interface UserProfile {
   is_active: boolean;
   created_at: string;
 }
-
-const LANGUAGES: { value: string; label: string }[] = [
-  { value: 'en', label: 'English' },
-  { value: 'am', label: 'Amharic' },
-  { value: 'om', label: 'Afaan Oromo' },
-];
 
 const ROLE_STYLES: Record<string, string> = {
   distributor_admin: 'bg-blue-100 text-blue-700',
@@ -38,12 +33,12 @@ function truncateId(id: string): string {
 }
 
 export default function ProfilePage() {
+  const { languageCode, languages, setLanguageCode, t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   const [formName, setFormName] = useState('');
-  const [formLang, setFormLang] = useState('en');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -56,7 +51,6 @@ export default function ProfilePage() {
         if (!cancelled) {
           setProfile(res);
           setFormName(res.name ?? '');
-          setFormLang(res.language_pref ?? 'en');
         }
       })
       .catch((err) => {
@@ -75,7 +69,6 @@ export default function ProfilePage() {
     try {
       const updated = await put<UserProfile>('/users/me', {
         name: formName.trim() || null,
-        language_pref: formLang,
       });
       setProfile(updated);
       setSaveMsg({ type: 'success', text: 'Profile updated successfully.' });
@@ -91,12 +84,12 @@ export default function ProfilePage() {
     ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : '';
 
-  if (loading) return <PageShell><p className="text-gray-500">Loading profile...</p></PageShell>;
-  if (error) return <PageShell><p className="text-red-600">{error}</p></PageShell>;
-  if (!profile) return <PageShell><p className="text-gray-500">No profile found.</p></PageShell>;
+  if (loading) return <PageShell t={t}><p className="text-gray-500">Loading profile...</p></PageShell>;
+  if (error) return <PageShell t={t}><p className="text-red-600">{error}</p></PageShell>;
+  if (!profile) return <PageShell t={t}><p className="text-gray-500">No profile found.</p></PageShell>;
 
   return (
-    <PageShell>
+    <PageShell t={t}>
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Profile Card */}
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
@@ -120,8 +113,14 @@ export default function ProfilePage() {
           </div>
 
           <div className="mt-5 space-y-3 border-t border-gray-100 pt-5">
-            <InfoRow label="Language" value={LANGUAGES.find((l) => l.value === profile.language_pref)?.label ?? profile.language_pref} />
-            <InfoRow label="Member Since" value={memberSince} />
+            <InfoRow
+              label={t('language')}
+              value={
+                languages.find((l) => l.code === profile.language_pref)?.native_name
+                  ?? profile.language_pref
+              }
+            />
+            <InfoRow label={t('member_since')} value={memberSince} />
           </div>
         </div>
 
@@ -145,12 +144,14 @@ export default function ProfilePage() {
               <label htmlFor="profile-lang" className="block text-sm font-medium text-gray-700">Language Preference</label>
               <select
                 id="profile-lang"
-                value={formLang}
-                onChange={(e) => setFormLang(e.target.value)}
+                value={languageCode}
+                onChange={(e) => void setLanguageCode(e.target.value)}
                 className="mt-1 block w-full rounded-xl border border-gray-200 bg-light px-4 py-2.5 text-sm text-dark focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                {LANGUAGES.map((lang) => (
-                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                {languages.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.native_name} ({lang.code})
+                  </option>
                 ))}
               </select>
             </div>
@@ -166,7 +167,7 @@ export default function ProfilePage() {
               disabled={saving}
               className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('saving') : t('save_changes')}
             </button>
           </form>
         </div>
@@ -174,7 +175,7 @@ export default function ProfilePage() {
 
       {/* Account Info */}
       <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-        <h2 className="text-lg font-semibold text-dark">Account Information</h2>
+        <h2 className="text-lg font-semibold text-dark">{t('account_info')}</h2>
         <div className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
           <InfoRow label="User ID" value={truncateId(profile.id)} mono />
           <InfoRow label="Phone" value={profile.phone} />
@@ -192,12 +193,12 @@ export default function ProfilePage() {
   );
 }
 
-function PageShell({ children }: { children: React.ReactNode }) {
+function PageShell({ children, t }: { children: React.ReactNode; t: (key: string, fallback?: string) => string }) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-dark">Profile &amp; Settings</h1>
-        <p className="mt-1 text-sm text-gray-500">Manage your account details and preferences.</p>
+        <h1 className="text-2xl font-bold text-dark">{t('profile_settings')}</h1>
+        <p className="mt-1 text-sm text-gray-500">{t('manage_account')}</p>
       </div>
       {children}
     </div>

@@ -1,0 +1,11 @@
+{
+  "@@locale": "sw",
+  "appTitle": "SoukSync",
+  "login": "Ingia",
+  "logout": "Toka",
+  "home": "Nyumbani",
+  "catalog": "Katalogi",
+  "orders": "Maagizo",
+  "credit": "Mkopo",
+  "loading": "Inapakia..."
+}

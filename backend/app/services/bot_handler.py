@@ -10,7 +10,7 @@ from typing import Any
 import structlog
 
 from app.services import telegram_bot as tg
-from app.services.conversation import ConversationState, ConversationStep, get_state, reset_state
+from app.services.conversation import ConversationState, ConversationStep, get_state
 from app.services.copy import LOCATIONS, SAMPLE_PRODUCTS, SHOP_TYPES, t
 
 logger = structlog.get_logger(__name__)

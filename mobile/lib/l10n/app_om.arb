@@ -1,0 +1,11 @@
+{
+  "@@locale": "om",
+  "appTitle": "SoukSync",
+  "login": "Login",
+  "logout": "Logout",
+  "home": "Home",
+  "catalog": "Catalog",
+  "orders": "Orders",
+  "credit": "Credit",
+  "loading": "Loading..."
+}

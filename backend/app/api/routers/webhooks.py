@@ -47,7 +47,8 @@ async def telegram_webhook(request: Request) -> JSONResponse:
 
     **Test in Swagger:** Use "Try it out", set body to raw JSON. Example:
     ```json
-    {"update_id": 123456789, "message": {"message_id": 1, "from": {"id": 111, "first_name": "Test"}, "chat": {"id": 111, "type": "private"}, "text": "/start"}}
+    {"update_id": 123456789, "message": {"message_id": 1, "from": {"id": 111,
+    "first_name": "Test"}, "chat": {"id": 111, "type": "private"}, "text": "/start"}}
     ```
     """
     try:

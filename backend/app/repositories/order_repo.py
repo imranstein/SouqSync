@@ -2,18 +2,22 @@
 
 from __future__ import annotations
 
-import uuid
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.models.order import VALID_TRANSITIONS, Order, OrderItem, OrderStatus
-from app.models.product import Product
-from app.schemas.order import OrderCreate
+
+if TYPE_CHECKING:
+    import uuid
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.models.product import Product
+    from app.schemas.order import OrderCreate
 
 
 class OrderRepository:
@@ -83,7 +87,7 @@ class OrderRepository:
 
         return list(rows), total
 
-    async def get_order(self, order_id: uuid.UUID) -> Optional[Order]:
+    async def get_order(self, order_id: uuid.UUID) -> Order | None:
         stmt = (
             select(Order)
             .options(
@@ -103,8 +107,8 @@ class OrderRepository:
 
         try:
             target = OrderStatus(new_status)
-        except ValueError:
-            raise ValidationError(f"Invalid status: {new_status}")
+        except ValueError as err:
+            raise ValidationError(f"Invalid status: {new_status}") from err
 
         allowed = VALID_TRANSITIONS.get(order.status.value, set())
         if target.value not in allowed:

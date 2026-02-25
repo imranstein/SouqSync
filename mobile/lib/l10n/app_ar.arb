@@ -1,0 +1,11 @@
+{
+  "@@locale": "ar",
+  "appTitle": "SoukSync",
+  "login": "تسجيل الدخول",
+  "logout": "تسجيل الخروج",
+  "home": "الرئيسية",
+  "catalog": "الكتالوج",
+  "orders": "الطلبات",
+  "credit": "الائتمان",
+  "loading": "جار التحميل..."
+}

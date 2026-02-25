@@ -3,6 +3,7 @@
 Keys match the message identifiers used in the bot handler.
 Supports: en (English), am (Amharic), om (Afaan Oromo).
 """
+# ruff: noqa: E501  # long i18n strings
 
 from __future__ import annotations
 

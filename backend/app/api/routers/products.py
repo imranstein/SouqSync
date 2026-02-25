@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import uuid
+import uuid  # noqa: TC003
+
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db, require_role
+from app.api.deps import get_db, require_role
 from app.core.exceptions import NotFoundError
-from app.models.user import User
 from app.repositories.product_repo import ProductRepository
 from app.schemas.product import (
     ProductCreate,
@@ -17,6 +17,11 @@ from app.schemas.product import (
     ProductResponse,
     ProductUpdate,
 )
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.models.user import User
 
 router = APIRouter()
 

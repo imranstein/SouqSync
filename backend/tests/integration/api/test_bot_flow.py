@@ -5,9 +5,8 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
 from app.main import app
+from httpx import ASGITransport, AsyncClient
 
 
 def _make_update(update_id: int, chat_id: int, text: str) -> dict:

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/auth-context';
+import { useI18n } from '../contexts/i18n-context';
 import { get } from '../lib/api';
 
 interface Product {
@@ -80,6 +81,7 @@ function formatCurrency(value: number): string {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +107,7 @@ export default function DashboardPage() {
         setCredit(creditRes);
       } catch (err: unknown) {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+        setError(err instanceof Error ? err.message : t('error_loading'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -113,7 +115,7 @@ export default function DashboardPage() {
 
     fetchAll();
     return () => { cancelled = true; };
-  }, []);
+  }, [t]);
 
   const pendingCount = orders?.items.filter((o) => o.status === 'pending').length ?? 0;
   const totalRevenue = orders?.items.reduce((sum, o) => sum + parseFloat(o.total || '0'), 0) ?? 0;
@@ -123,52 +125,37 @@ export default function DashboardPage() {
     .slice(0, 5) ?? [];
 
   const kpis = [
-    {
-      label: 'Total Products',
-      value: products?.total.toString() ?? '—',
-      icon: <BoxIcon />,
-    },
-    {
-      label: 'Pending Orders',
-      value: pendingCount.toString(),
-      icon: <ClockIcon />,
-    },
-    {
-      label: 'Total Revenue (ETB)',
-      value: orders ? formatCurrency(totalRevenue) : '—',
-      icon: <CurrencyIcon />,
-    },
-    {
-      label: 'Credit Available (ETB)',
-      value: credit ? formatCurrency(credit.available_credit) : '—',
-      icon: <ShoppingBagIcon />,
-    },
+    { label: t('total_products'), value: products?.total.toString() ?? '—', icon: <BoxIcon /> },
+    { label: t('pending_orders'), value: pendingCount.toString(), icon: <ClockIcon /> },
+    { label: `${t('total_revenue')} (ETB)`, value: orders ? formatCurrency(totalRevenue) : '—', icon: <CurrencyIcon /> },
+    { label: `${t('credit_available')} (ETB)`, value: credit ? formatCurrency(credit.available_credit) : '—', icon: <ShoppingBagIcon /> },
   ];
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark">
-          Welcome back, <span className="text-primary">{user?.name ?? 'User'}</span>
+      <div className="mb-8 animate-fade-in-up">
+        <h1 className="text-2xl font-bold text-dark sm:text-3xl" style={{ fontFamily: 'Syne, sans-serif' }}>
+          {t('welcome_back')}, <span className="text-primary">{user?.name ?? t('user')}</span>
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Here&apos;s what&apos;s happening with your business today.
+          {t('dashboard_subtitle')}
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+        <div className="mb-6 animate-fade-in-up rounded-xl bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {kpis.map((kpi) => (
+        {kpis.map((kpi, i) => (
           <div
             key={kpi.label}
-            className="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition hover:shadow-md"
+            className="group animate-fade-in-up rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            style={{ animationDelay: `${50 * i}ms` }}
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               {kpi.icon}
@@ -186,8 +173,8 @@ export default function DashboardPage() {
       {/* Widgets */}
       <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Recent Orders */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h2 className="mb-4 text-lg font-semibold text-dark">Recent Orders</h2>
+        <div className="animate-fade-in-up rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition duration-300 hover:shadow-md" style={{ animationDelay: '200ms' }}>
+          <h2 className="mb-4 text-lg font-semibold text-dark" style={{ fontFamily: 'Syne, sans-serif' }}>{t('recent_orders')}</h2>
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -197,7 +184,7 @@ export default function DashboardPage() {
           ) : recentOrders.length === 0 ? (
             <div className="flex flex-col items-center py-8 text-gray-400">
               <ShoppingBagIcon />
-              <p className="mt-2 text-sm">No orders yet.</p>
+              <p className="mt-2 text-sm">{t('no_orders')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -239,8 +226,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Product Catalog */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h2 className="mb-4 text-lg font-semibold text-dark">Product Catalog</h2>
+        <div className="animate-fade-in-up rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition duration-300 hover:shadow-md" style={{ animationDelay: '250ms' }}>
+          <h2 className="mb-4 text-lg font-semibold text-dark" style={{ fontFamily: 'Syne, sans-serif' }}>{t('product_catalog')}</h2>
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -250,7 +237,7 @@ export default function DashboardPage() {
           ) : !products || products.items.length === 0 ? (
             <div className="flex flex-col items-center py-8 text-gray-400">
               <BoxIcon />
-              <p className="mt-2 text-sm">No products yet.</p>
+              <p className="mt-2 text-sm">{t('no_products')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">

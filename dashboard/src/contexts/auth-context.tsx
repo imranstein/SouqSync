@@ -12,8 +12,11 @@ import { post, get, setTokens, getAccessToken, clearTokens, ApiError } from '../
 interface User {
   id: string;
   phone: string;
-  name: string;
+  name: string | null;
   role: string;
+  language_pref?: string;
+  tenant_id?: string | null;
+  is_active?: boolean;
 }
 
 interface AuthState {
@@ -23,6 +26,7 @@ interface AuthState {
   error: string | null;
   requestOtp: (phone: string) => Promise<void>;
   verifyOtp: (phone: string, otp: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -101,10 +105,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error,
       requestOtp,
       verifyOtp,
+      refreshUser: fetchUser,
       logout,
       clearError,
     }),
-    [user, isLoading, error, requestOtp, verifyOtp, logout, clearError],
+    [user, isLoading, error, requestOtp, verifyOtp, fetchUser, logout, clearError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import datetime
+import datetime  # noqa: TC003
 import enum
-import uuid
-from decimal import Decimal
-from typing import TYPE_CHECKING, List, Optional
+import uuid  # noqa: TC003
+from decimal import Decimal  # noqa: TC003
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -55,10 +55,10 @@ class Order(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     delivery_fee: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), default=0, nullable=False,
     )
-    payment_method: Mapped[Optional[str]] = mapped_column(
+    payment_method: Mapped[str | None] = mapped_column(
         String(50), nullable=True,
     )
-    notes: Mapped[Optional[str]] = mapped_column(
+    notes: Mapped[str | None] = mapped_column(
         String(1000), nullable=True,
     )
 
@@ -74,7 +74,7 @@ class Order(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         back_populates="distributed_orders",
         lazy="selectin",
     )
-    items: Mapped[List[OrderItem]] = relationship(
+    items: Mapped[list[OrderItem]] = relationship(
         "OrderItem",
         back_populates="order",
         cascade="all, delete-orphan",

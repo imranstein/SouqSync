@@ -7,11 +7,10 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
 from app.core.security import create_access_token
 from app.main import app
 from app.models.user import User, UserRole
+from httpx import ASGITransport, AsyncClient
 
 
 def _make_user(**overrides) -> MagicMock:
@@ -23,6 +22,7 @@ def _make_user(**overrides) -> MagicMock:
         language_pref="en",
         telegram_chat_id=123456,
         distributor_id=None,
+        tenant_id=None,
         is_active=True,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),

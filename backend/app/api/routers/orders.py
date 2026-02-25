@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import uuid
+import uuid  # noqa: TC003
+
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_db
 from app.core.exceptions import NotFoundError, ValidationError
-from app.models.user import User
 from app.repositories.order_repo import OrderRepository
 from app.repositories.product_repo import ProductRepository
 from app.schemas.order import (
@@ -19,6 +19,11 @@ from app.schemas.order import (
     OrderResponse,
     OrderStatusUpdate,
 )
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.models.user import User
 
 router = APIRouter()
 

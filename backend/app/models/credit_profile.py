@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import uuid
-from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+import uuid  # noqa: TC003
+from decimal import Decimal  # noqa: TC003
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Float, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,7 +27,7 @@ class CreditProfile(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     current_balance: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), default=0, nullable=False,
     )
-    risk_score: Mapped[Optional[float]] = mapped_column(
+    risk_score: Mapped[float | None] = mapped_column(
         Float, nullable=True,
     )
     is_active: Mapped[bool] = mapped_column(

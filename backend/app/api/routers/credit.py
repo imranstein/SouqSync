@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends
 
 from app.api.deps import get_db, require_role
-from app.models.user import User
 from app.repositories.credit_repo import CreditRepository
 from app.schemas.credit import CreditLimitResponse, CreditProfileResponse
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.models.user import User
 
 router = APIRouter()
 

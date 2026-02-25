@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-import uuid
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.credit_profile import CreditProfile
+
+if TYPE_CHECKING:
+    import uuid
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class CreditRepository:

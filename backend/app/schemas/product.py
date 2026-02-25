@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import uuid
-from datetime import datetime
-from decimal import Decimal
+import uuid  # noqa: TC003
+from datetime import datetime  # noqa: TC003
+from decimal import Decimal  # noqa: TC003
 
 from pydantic import BaseModel, ConfigDict, Field
 

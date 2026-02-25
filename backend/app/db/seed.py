@@ -10,15 +10,23 @@ from pathlib import Path
 # Ensure the backend root is importable when run as a script.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import async_session_factory, engine
 from app.models.base import Base
 from app.models.credit_profile import CreditProfile
+from app.models.currency import Currency
+from app.models.language import Language
 from app.models.order import Order, OrderItem, OrderStatus
 from app.models.product import Product
+from app.models.tenant import Tenant
+from app.models.translation import Translation
 from app.models.user import User, UserRole
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 PRODUCTS: list[dict[str, object]] = [
     # ── Beverages ──
@@ -57,6 +65,108 @@ PRODUCTS: list[dict[str, object]] = [
 ]
 
 
+LANGUAGES = [
+    {"code": "en", "name": "English", "native_name": "English", "is_rtl": False, "is_default": True, "sort_order": 1},
+    {"code": "am", "name": "Amharic", "native_name": "አማርኛ", "is_rtl": False, "is_default": False, "sort_order": 2},
+    {"code": "om", "name": "Oromifa", "native_name": "Afaan Oromoo", "is_rtl": False,
+     "is_default": False, "sort_order": 3},
+    {"code": "sid", "name": "Sidama", "native_name": "Sidámo", "is_rtl": False,
+     "is_default": False, "sort_order": 4},
+    {"code": "ti", "name": "Tigrigna", "native_name": "ትግርኛ", "is_rtl": False,
+     "is_default": False, "sort_order": 5},
+    {"code": "ar", "name": "Arabic", "native_name": "العربية", "is_rtl": True, "is_default": False, "sort_order": 6},
+    {"code": "sw", "name": "Swahili", "native_name": "Kiswahili", "is_rtl": False,
+     "is_default": False, "sort_order": 7},
+]
+
+CURRENCIES = [
+    {"code": "ETB", "name": "Ethiopian Birr", "symbol": "ETB", "decimal_places": 2, "is_default": True},
+    {"code": "USD", "name": "US Dollar", "symbol": "$", "decimal_places": 2, "is_default": False},
+    {"code": "KES", "name": "Kenyan Shilling", "symbol": "KSh", "decimal_places": 2, "is_default": False},
+]
+
+COMMON_TRANSLATIONS_EN = [
+    ("welcome", "Welcome"),
+    ("login", "Login"),
+    ("logout", "Logout"),
+    ("sign_out", "Sign out"),
+    ("dashboard", "Dashboard"),
+    ("inventory", "Inventory"),
+    ("orders", "Orders"),
+    ("credit", "Credit"),
+    ("profile", "Profile"),
+    ("settings", "Settings"),
+    ("user", "User"),
+    ("save", "Save"),
+    ("cancel", "Cancel"),
+    ("loading", "Loading..."),
+    ("total_products", "Total Products"),
+    ("pending_orders", "Pending Orders"),
+    ("total_revenue", "Total Revenue"),
+    ("credit_available", "Credit Available"),
+    ("recent_orders", "Recent Orders"),
+    ("product_catalog", "Product Catalog"),
+    ("no_orders", "No orders yet"),
+    ("view_all", "View all"),
+    ("add_product", "Add Product"),
+    ("edit", "Edit"),
+    ("delete", "Delete"),
+    ("search", "Search"),
+    ("filter", "Filter"),
+    ("export_csv", "Export CSV"),
+    ("no_products", "No products found"),
+    ("error_loading", "Failed to load"),
+    ("retry", "Retry"),
+    ("profile_settings", "Profile & Settings"),
+    ("manage_account", "Manage your account details and preferences."),
+    ("language", "Language"),
+    ("member_since", "Member Since"),
+    ("account_info", "Account Information"),
+    ("save_changes", "Save Changes"),
+    ("saving", "Saving..."),
+    ("welcome_back", "Welcome back"),
+    ("dashboard_subtitle", "Here's what's happening with your business today."),
+]
+
+
+async def seed_i18n(session: AsyncSession) -> None:
+    """Seed languages, currencies, default tenant, and sample translations."""
+    existing_lang = await session.execute(select(Language).where(Language.code == "en"))
+    if existing_lang.scalar_one_or_none() is not None:
+        print("i18n seed already exists — skipping.")
+        return
+
+    # ── Default tenant ──
+    default_tenant = Tenant(
+        name="SoukSync Default",
+        slug="default",
+        locale="en",
+        currency_code="ETB",
+        is_active=True,
+    )
+    session.add(default_tenant)
+    await session.flush()
+
+    # ── Languages ──
+    for lang_row in LANGUAGES:
+        session.add(Language(**lang_row))
+    await session.flush()
+
+    # ── Currencies ──
+    for curr_row in CURRENCIES:
+        session.add(Currency(**curr_row))
+    await session.flush()
+
+    # ── Translations (English common namespace) ──
+    lang_en = (await session.execute(select(Language).where(Language.code == "en"))).scalar_one()
+    for key, value in COMMON_TRANSLATIONS_EN:
+        session.add(Translation(language_id=lang_en.id, tenant_id=None, namespace="common", key=key, value=value))
+    await session.flush()
+
+    await session.commit()
+    print("Seeded: 1 tenant, 7 languages, 3 currencies, English common translations")
+
+
 async def seed(session: AsyncSession) -> None:
     """Insert sample data. Skips if distributor phone already exists."""
     existing = await session.execute(
@@ -66,12 +176,23 @@ async def seed(session: AsyncSession) -> None:
         print("Seed data already exists — skipping.")
         return
 
+    # ── Default tenant for users ──
+    default_tenant = (await session.execute(select(Tenant).where(Tenant.slug == "default"))).scalar_one_or_none()
+    if default_tenant is None:
+        default_tenant = Tenant(
+        name="SoukSync Default", slug="default", locale="en",
+        currency_code="ETB", is_active=True,
+    )
+        session.add(default_tenant)
+        await session.flush()
+
     # ── Users ──
     distributor = User(
         phone="+251911000001",
         name="Abebe Distributors",
         role=UserRole.DISTRIBUTOR,
         language_pref="am",
+        tenant_id=default_tenant.id,
         is_active=True,
     )
     session.add(distributor)
@@ -83,6 +204,7 @@ async def seed(session: AsyncSession) -> None:
         role=UserRole.KIOSK_OWNER,
         language_pref="am",
         distributor_id=distributor.id,
+        tenant_id=default_tenant.id,
         is_active=True,
     )
     session.add(kiosk_owner)
@@ -148,6 +270,8 @@ async def main() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    async with async_session_factory() as session:
+        await seed_i18n(session)
     async with async_session_factory() as session:
         await seed(session)
 

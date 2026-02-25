@@ -1,65 +1,84 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { useAuth } from '../contexts/auth-context';
+import { useI18n } from '../contexts/i18n-context';
 
 interface NavItem {
-  name: string;
+  nameKey: string;
   to: string;
   icon: React.ReactNode;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  {
-    name: 'Dashboard',
-    to: '/dashboard',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Inventory',
-    to: '/inventory',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Orders',
-    to: '/orders',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Credit',
-    to: '/credit',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Profile',
-    to: '/profile',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-      </svg>
-    ),
-  },
-];
+function makeNavItems(role?: string): NavItem[] {
+  const base: NavItem[] = [
+    {
+      nameKey: 'dashboard',
+      to: '/dashboard',
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+      ),
+    },
+    {
+      nameKey: 'inventory',
+      to: '/inventory',
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+      ),
+    },
+    {
+      nameKey: 'orders',
+      to: '/orders',
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+      ),
+    },
+    {
+      nameKey: 'credit',
+      to: '/credit',
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+        </svg>
+      ),
+    },
+    {
+      nameKey: 'profile',
+      to: '/profile',
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
+      ),
+    },
+  ];
+
+  if (role === 'admin' || role === 'super_admin') {
+    base.push({
+      nameKey: 'settings',
+      to: '/settings',
+      icon: (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0115 0m-15 0a7.5 7.5 0 0015 0m-15 0H3m18 0h-1.5m-15 0a7.5 7.5 0 0115 0m-9 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
+        </svg>
+      ),
+    });
+  }
+
+  return base;
+}
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navItems = useMemo(() => makeNavItems(user?.role), [user?.role]);
+  const { languageCode, languages, setLanguageCode, t } = useI18n();
 
   return (
     <div className="flex h-screen bg-light">
@@ -89,7 +108,7 @@ export default function Layout() {
               leaveTo="-translate-x-full"
             >
               <DialogPanel className="relative flex w-64 flex-col">
-                <SidebarContent onNavClick={() => setSidebarOpen(false)} />
+                <SidebarContent navItems={navItems} t={t} onNavClick={() => setSidebarOpen(false)} />
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -98,7 +117,7 @@ export default function Layout() {
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col">
-        <SidebarContent />
+        <SidebarContent navItems={navItems} t={t} />
       </aside>
 
       {/* Main content */}
@@ -118,8 +137,25 @@ export default function Layout() {
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-4">
+            <div className="hidden sm:block">
+              <label className="sr-only" htmlFor="language">
+                Language
+              </label>
+              <select
+                id="language"
+                value={languageCode}
+                onChange={(e) => void setLanguageCode(e.target.value)}
+                className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-dark shadow-sm outline-none focus:border-primary"
+              >
+                {languages.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.native_name} ({l.code})
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-dark">{user?.name ?? 'User'}</p>
+              <p className="text-sm font-medium text-dark">{user?.name ?? t('user')}</p>
               <p className="text-xs text-gray-400">{user?.role ?? 'Admin'}</p>
             </div>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
@@ -129,7 +165,7 @@ export default function Layout() {
               type="button"
               onClick={logout}
               className="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
-              title="Sign out"
+              title={t('sign_out')}
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -147,19 +183,19 @@ export default function Layout() {
   );
 }
 
-function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
+function SidebarContent({ navItems, t, onNavClick }: { navItems: NavItem[]; t: (key: string, fallback?: string) => string; onNavClick?: () => void }) {
   return (
     <div className="flex h-full flex-col bg-dark text-white">
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
-        <span className="text-xl font-bold tracking-tight">
+        <span className="text-xl font-bold tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
           Souk<span className="text-accent">Sync</span>
         </span>
       </div>
 
       {/* Navigation */}
       <nav className="mt-2 flex-1 space-y-1 px-3">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -173,7 +209,7 @@ function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
             }
           >
             {item.icon}
-            {item.name}
+            {t(item.nameKey)}
           </NavLink>
         ))}
       </nav>

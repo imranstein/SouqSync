@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Dict
-
 from fastapi import APIRouter
 from sqlalchemy import text
 
@@ -48,5 +46,5 @@ async def health() -> HealthResponse:
 
 
 @router.get("/health/ready")
-async def readiness() -> Dict[str, str]:
+async def readiness() -> dict[str, str]:
     return {"status": "ready"}

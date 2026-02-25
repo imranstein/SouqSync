@@ -7,6 +7,7 @@ import InventoryPage from './pages/inventory';
 import OrdersPage from './pages/orders';
 import CreditPage from './pages/credit';
 import ProfilePage from './pages/profile';
+import SettingsPage from './pages/settings';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: 'orders', element: <OrdersPage /> },
       { path: 'credit', element: <CreditPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'settings', element: <SettingsPage /> },
     ],
   },
 ]);

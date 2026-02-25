@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-import uuid
-from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
+
+if TYPE_CHECKING:
+    import uuid
+    from decimal import Decimal
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ProductRepository:
@@ -43,7 +46,7 @@ class ProductRepository:
 
         return list(rows), total
 
-    async def get_product(self, product_id: uuid.UUID) -> Optional[Product]:
+    async def get_product(self, product_id: uuid.UUID) -> Product | None:
         return await self._session.get(Product, product_id)
 
     async def create_product(
@@ -71,7 +74,7 @@ class ProductRepository:
         self,
         product_id: uuid.UUID,
         data: dict,
-    ) -> Optional[Product]:
+    ) -> Product | None:
         product = await self.get_product(product_id)
         if product is None:
             return None
