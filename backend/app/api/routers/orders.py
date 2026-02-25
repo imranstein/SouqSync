@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import uuid  # noqa: TC003
-
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Query

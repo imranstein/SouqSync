@@ -13,10 +13,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # Ensure the backend root is on sys.path so `app` is importable.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import app.db.base  # noqa: E402, F401 — registers all models
 from app.core.config import settings  # noqa: E402
 from app.models.base import Base  # noqa: E402
-
-import app.db.base  # noqa: E402, F401 — registers all models
 
 config = context.config
 if config.config_file_name is not None:
