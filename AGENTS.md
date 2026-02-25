@@ -16,7 +16,7 @@
 
 ### Startup sequence
 
-1. Start Docker daemon: `sudo dockerd &>/dev/null &` (wait ~3s), then `sudo chmod 666 /var/run/docker.sock`
+1. Ensure the Docker daemon is running (e.g., `sudo systemctl start docker` or `sudo dockerd &>/dev/null &`). Add your user to the `docker` group so `/var/run/docker.sock` is accessible only to group members: `sudo usermod -aG docker $USER`. Log out and back in (or start a new shell, e.g. `newgrp docker`) for the group membership to take effect.
 2. Start infrastructure: `docker compose up -d db redis` (from repo root)
 3. Backend: activate venv, run migrations, start uvicorn (see README Quick Start)
 4. Web: `cd web && npm run dev`
