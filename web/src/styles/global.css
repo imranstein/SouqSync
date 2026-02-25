@@ -50,11 +50,6 @@
   66% { transform: translate(-1%, 1%) scale(0.98); opacity: 0.35; }
 }
 
-@keyframes shine {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
 .animate-fade-in-up {
   animation: fade-in-up 0.7s ease-out forwards;
 }
