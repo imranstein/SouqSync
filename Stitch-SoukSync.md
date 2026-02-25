@@ -22,6 +22,8 @@ This document records the **Stitch** (stitch.withgoogle.com) project and the exa
 - **Brand:** Financial dignity + logistical reliability. Colors: energetic orange + institutional navy.
 - **UI/UX (from PDF Section B):** Vibrant, highly visual, energetic, trustworthy. High-contrast Credit Health card, visual product catalog, prominent 1-Click Restock (navy), bold legible typography.
 
+**Note on color palette:** The Stitch prompts below reference the original brand colors (institutional navy #1B2A4A and energetic orange #FF6B35) from the strategic assessment. However, the actual landing page implementation (`web/src/pages/LandingPage.tsx`) uses a teal/slate palette (TEAL_600 #0d9488, SLATE_900 #0f172a) for a modern, refined aesthetic. The Stitch prompts serve as design reference documentation and may differ from the final implementation.
+
 ---
 
 ## Screen 1: Landing Page
@@ -33,10 +35,12 @@ This document records the **Stitch** (stitch.withgoogle.com) project and the exa
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating, animation-ready desktop LANDING PAGE for 'SoukSync', an asset-light B2B fast-moving consumer goods marketplace and embedded Buy-Now-Pay-Later (BNPL) platform for Ethiopia and East Africa.
 
 **Brand (from strategy):** Financial dignity and logistical reliability. Color palette: institutional navy blue (#1B2A4A) as primary, energetic orange (#FF6B35) as accent. Typography: bold, legible, distinctive—use a strong display font for headlines and a clean sans-serif for body. Tone: vibrant, highly visual, energetic, trustworthy.
+
+**Note:** This prompt reflects the original brand specification. The actual implementation uses a teal/slate palette (see note above).
 
 **Required sections and functionality:**
 1. **Sticky header:** Logo (SoukSync — 'Souk' in navy, 'Sync' in orange), nav links (Features, How it works), prominent Sign in CTA button (navy, pill-shaped).
@@ -60,10 +64,12 @@ Design a modern, captivating, animation-ready desktop LANDING PAGE for 'SoukSync
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating DESKTOP DASHBOARD for 'SoukSync', the B2B FMCG marketplace and BNPL platform for Ethiopia. This is the main dashboard a kiosk owner or distributor sees after sign-in.
 
 **Brand:** Same as landing—institutional navy (#1B2A4A), energetic orange (#FF6B35). Bold, legible typography. Vibrant, trustworthy, professional.
+
+**Note:** This prompt reflects the original brand specification. The actual implementation may use a different palette (see note above).
 
 **Layout:**
 1. **Sidebar (left):** Dark navy background. Logo 'SoukSync' at top (Souk navy, Sync orange). Navigation: Dashboard (active), Inventory, Orders, Credit, Profile; for admin also Settings. Icons + labels. Footer with small copyright.
@@ -90,10 +96,12 @@ Design a modern, captivating DESKTOP DASHBOARD for 'SoukSync', the B2B FMCG mark
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating DESKTOP **Credit & BNPL** page for 'SoukSync', the B2B FMCG marketplace and BNPL platform for Ethiopia. This is the screen where kiosk owners see their Buy Now Pay Later credit and repayment status.
 
 **Brand:** Institutional navy (#1B2A4A), energetic orange (#FF6B35). Bold, legible typography. Vibrant, trustworthy. (From DESIGN.md)
+
+**Note:** This prompt reflects the original brand specification. The actual implementation may use a different palette (see note above).
 
 **Layout and functionality:**
 1. Same app chrome: dark navy sidebar (logo, Dashboard, Inventory, Orders, Credit active, Profile), white top bar (language, user, sign out).
@@ -116,10 +124,12 @@ Design for data-driven placeholders. Animation-ready. High contrast, scannable.
 
 ### Prompt (copy for Stitch)
 
-```
+```text
 Design a modern, captivating DESKTOP **Inventory / Product catalog** page for 'SoukSync', the B2B FMCG marketplace for Ethiopia. This is where kiosk owners or distributors browse and manage products.
 
 **Brand:** Institutional navy (#1B2A4A), energetic orange (#FF6B35). Bold, legible typography. Vibrant, trustworthy. (From DESIGN.md)
+
+**Note:** This prompt reflects the original brand specification. The actual implementation may use a different palette (see note above).
 
 **Layout and functionality:**
 1. Same app chrome: dark navy sidebar (logo, Dashboard, Inventory active, Orders, Credit, Profile), white top bar (language, user, sign out).

@@ -221,26 +221,28 @@ describe('InventoryPage', () => {
       return originalCreateElement(tagName);
     }) as any;
 
-    vi.mocked(api.get).mockResolvedValue(mockProductList);
-    render(<InventoryPage />);
+    try {
+      vi.mocked(api.get).mockResolvedValue(mockProductList);
+      render(<InventoryPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Product A')).toBeInTheDocument();
-    });
+      await waitFor(() => {
+        expect(screen.getByText('Product A')).toBeInTheDocument();
+      });
 
-    // Click export button
-    const exportButton = screen.getByText(/export csv/i);
-    fireEvent.click(exportButton);
+      // Click export button
+      const exportButton = screen.getByText(/export csv/i);
+      fireEvent.click(exportButton);
 
-    // Check that CSV download was triggered
-    await waitFor(() => {
-      expect(mockCreateObjectURL).toHaveBeenCalled();
-      expect(mockClick).toHaveBeenCalled();
-    });
-
-    // Restore
-    global.URL.createObjectURL = originalCreateObjectURL;
-    global.URL.revokeObjectURL = originalRevokeObjectURL;
-    document.createElement = originalCreateElement as any;
+      // Check that CSV download was triggered
+      await waitFor(() => {
+        expect(mockCreateObjectURL).toHaveBeenCalled();
+        expect(mockClick).toHaveBeenCalled();
+      });
+    } finally {
+      // Restore all mocks to maintain test isolation
+      global.URL.createObjectURL = originalCreateObjectURL;
+      global.URL.revokeObjectURL = originalRevokeObjectURL;
+      document.createElement = originalCreateElement;
+    }
   });
 });
