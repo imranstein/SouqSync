@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-/* Refined, modern palette — no Stitch navy/orange. Light, confident, 2025 SaaS feel. */
+/* Modern palette using teal and slate colors. */
 const SLATE_900 = '#0f172a'
 const SLATE_600 = '#475569'
 const SLATE_400 = '#94a3b8'
 const TEAL_600 = '#0d9488'
-const TEAL_700 = '#0f766e'
 const BG = '#fafafa'
 const CARD = '#ffffff'
 const BORDER = 'rgba(15, 23, 42, 0.06)'
@@ -16,7 +15,7 @@ const features = [
     title: 'Never run out of stock',
     desc: 'Smart restocking and one-tap reorders keep your shelves full and your customers happy.',
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden={true}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
       </svg>
     ),
@@ -25,7 +24,7 @@ const features = [
     title: 'Get instant credit',
     desc: 'Buy now, pay later. Access ETB credit from trusted partners and grow without cash flow stress.',
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden={true}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
       </svg>
     ),
@@ -34,7 +33,7 @@ const features = [
     title: 'Order in one tap',
     desc: 'Restock your bestsellers instantly. Connect with distributors and track orders from your phone.',
     icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden={true}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z" />
       </svg>
     ),
@@ -54,7 +53,7 @@ export default function LandingPage() {
   return (
     <div
       className="min-h-screen overflow-x-hidden antialiased"
-      style={{ backgroundColor: BG, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+      style={{ backgroundColor: BG }}
     >
       {/* Nav — minimal, glass-like when scrolled */}
       <header

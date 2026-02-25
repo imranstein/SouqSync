@@ -1,28 +1,42 @@
+/**
+ * Tests for DashboardPage component.
+ *
+ * DashboardPage displays KPIs, recent orders, and product catalog widgets
+ * with data fetched from the API.
+ */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import DashboardPage from './dashboard';
 import { AuthProvider } from '../contexts/auth-context';
 import { I18nProvider } from '../contexts/i18n-context';
 import * as api from '../lib/api';
 
-vi.mock('../lib/api', () => ({
-  get: vi.fn(),
-  post: vi.fn(),
-  put: vi.fn(),
-  del: vi.fn(),
-  setTokens: vi.fn(),
-  getAccessToken: vi.fn(),
-  clearTokens: vi.fn(),
-  ApiError: class ApiError extends Error {
+// Shared ApiError class definition (matches ../test/mocks/api.ts)
+// Defined inline here because vi.mock is hoisted and cannot import from other modules
+vi.mock('../lib/api', () => {
+  class ApiError extends Error {
     status: number;
     constructor(status: number, message: string) {
       super(message);
       this.status = status;
       this.name = 'ApiError';
     }
-  },
-}));
+  }
+
+  return {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    del: vi.fn(),
+    setTokens: vi.fn(),
+    getAccessToken: vi.fn(),
+    clearTokens: vi.fn(),
+    ApiError,
+  };
+});
 
 const mockUser = {
   id: 'user1',
@@ -31,7 +45,61 @@ const mockUser = {
   role: 'admin',
 };
 
-function renderWithProviders(ui: React.ReactElement) {
+/**
+ * Helper function to create a date string relative to now.
+ * Used to avoid hardcoded future dates that become outdated.
+ */
+function createDateString(daysOffset = 0): string {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  return date.toISOString();
+}
+
+/**
+ * Creates a URL-based mock implementation that handles all API calls
+ * including AuthProvider (/users/me) and I18nProvider (/languages, /translations).
+ */
+function createApiMock(
+  dashboardData: {
+    products?: unknown;
+    orders?: unknown;
+    credit?: unknown;
+  },
+) {
+  return vi.fn((path: string) => {
+    // AuthProvider calls
+    if (path === '/users/me') {
+      return Promise.resolve(mockUser);
+    }
+
+    // I18nProvider calls
+    if (path.includes('/languages')) {
+      return Promise.resolve({ items: [], total: 0 });
+    }
+    if (path.includes('/translations/map')) {
+      return Promise.resolve({ namespace: 'common', translations: {} });
+    }
+
+    // DashboardPage calls
+    if (path.includes('/products')) {
+      return Promise.resolve(dashboardData.products ?? { items: [], total: 0, page: 1, per_page: 20 });
+    }
+    if (path.includes('/orders')) {
+      return Promise.resolve(dashboardData.orders ?? { items: [], total: 0, page: 1, per_page: 20 });
+    }
+    if (path.includes('/credit/limit')) {
+      if (dashboardData.credit === null) {
+        return Promise.reject(new api.ApiError(404, 'Not found'));
+      }
+      return Promise.resolve(dashboardData.credit ?? { credit_limit: 0, available_credit: 0 });
+    }
+
+    // Default fallback
+    return Promise.resolve({ items: [], total: 0, page: 1, per_page: 20 });
+  });
+}
+
+function renderWithProviders(ui: ReactElement) {
   return render(
     <BrowserRouter>
       <AuthProvider>
@@ -69,7 +137,7 @@ describe('DashboardPage', () => {
           category: 'beverages',
           distributor_id: 'd1',
           is_active: true,
-          created_at: '2026-01-01T00:00:00Z',
+          created_at: createDateString(),
         },
       ],
       total: 1,
@@ -88,8 +156,8 @@ describe('DashboardPage', () => {
           delivery_fee: '10.00',
           payment_method: 'cash',
           items: [],
-          created_at: '2026-01-01T00:00:00Z',
-          updated_at: '2026-01-01T00:00:00Z',
+          created_at: createDateString(),
+          updated_at: createDateString(),
         },
       ],
       total: 1,
@@ -102,10 +170,13 @@ describe('DashboardPage', () => {
       available_credit: 750,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(mockCredit);
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: mockCredit,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -136,8 +207,8 @@ describe('DashboardPage', () => {
           delivery_fee: '10.00',
           payment_method: 'cash',
           items: [],
-          created_at: '2026-01-01T00:00:00Z',
-          updated_at: '2026-01-01T00:00:00Z',
+          created_at: createDateString(),
+          updated_at: createDateString(),
         },
         {
           id: 'o2',
@@ -148,8 +219,8 @@ describe('DashboardPage', () => {
           delivery_fee: '5.00',
           payment_method: 'cash',
           items: [],
-          created_at: '2026-01-02T00:00:00Z',
-          updated_at: '2026-01-02T00:00:00Z',
+          created_at: createDateString(-1),
+          updated_at: createDateString(-1),
         },
       ],
       total: 2,
@@ -157,10 +228,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(null); // Credit limit fails
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -183,7 +257,7 @@ describe('DashboardPage', () => {
           category: 'beverages',
           distributor_id: 'd1',
           is_active: true,
-          created_at: '2026-01-01T00:00:00Z',
+          created_at: createDateString(),
         },
         {
           id: 'p2',
@@ -193,7 +267,7 @@ describe('DashboardPage', () => {
           category: 'snacks',
           distributor_id: 'd1',
           is_active: true,
-          created_at: '2026-01-01T00:00:00Z',
+          created_at: createDateString(),
         },
       ],
       total: 2,
@@ -208,10 +282,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(null); // Credit limit fails
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -238,10 +315,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(null); // Credit limit fails
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -265,10 +345,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(null); // Credit limit fails
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -278,7 +361,20 @@ describe('DashboardPage', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    vi.mocked(api.get).mockRejectedValue(new api.ApiError(500, 'Server error'));
+    vi.mocked(api.get).mockImplementation((path: string) => {
+      // AuthProvider and I18nProvider calls should succeed
+      if (path === '/users/me') {
+        return Promise.resolve(mockUser);
+      }
+      if (path.includes('/languages')) {
+        return Promise.resolve({ items: [], total: 0 });
+      }
+      if (path.includes('/translations/map')) {
+        return Promise.resolve({ namespace: 'common', translations: {} });
+      }
+      // DashboardPage calls should fail
+      return Promise.reject(new api.ApiError(500, 'Server error'));
+    });
 
     renderWithProviders(<DashboardPage />);
 
@@ -306,8 +402,8 @@ describe('DashboardPage', () => {
           delivery_fee: '10.00',
           payment_method: 'cash',
           items: [],
-          created_at: '2026-01-01T00:00:00Z',
-          updated_at: '2026-01-01T00:00:00Z',
+          created_at: createDateString(),
+          updated_at: createDateString(),
         },
         {
           id: 'o2',
@@ -318,8 +414,8 @@ describe('DashboardPage', () => {
           delivery_fee: '5.00',
           payment_method: 'cash',
           items: [],
-          created_at: '2026-01-02T00:00:00Z',
-          updated_at: '2026-01-02T00:00:00Z',
+          created_at: createDateString(-1),
+          updated_at: createDateString(-1),
         },
       ],
       total: 2,
@@ -327,10 +423,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(null); // Credit limit fails
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -355,11 +454,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockResolvedValueOnce(null); // Credit limit fails
-    vi.mocked(api.get).mockResolvedValueOnce(mockUser); // For auth context
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null,
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
@@ -383,10 +484,13 @@ describe('DashboardPage', () => {
       per_page: 20,
     };
 
-    vi.mocked(api.get)
-      .mockResolvedValueOnce(mockProducts)
-      .mockResolvedValueOnce(mockOrders)
-      .mockRejectedValueOnce(new api.ApiError(404, 'Not found')); // Credit limit fails
+    vi.mocked(api.get).mockImplementation(
+      createApiMock({
+        products: mockProducts,
+        orders: mockOrders,
+        credit: null, // Credit limit fails (returns null)
+      }),
+    );
 
     renderWithProviders(<DashboardPage />);
 
