@@ -104,7 +104,8 @@ async def request_otp(phone: str) -> dict:
         code = generate_otp()
         _mem_set(otp_key, hash_otp(code), OTP_TTL_SECONDS)
 
-    logger.info("otp_generated", phone=phone, otp=code)  # MVP: logged, not sent via SMS
+    if settings.DEBUG:
+        logger.info("otp_generated", phone=phone, otp=code)  # MVP: logged, not sent via SMS
     return {"message": "OTP sent successfully", "expires_in": OTP_TTL_SECONDS}
 
 
