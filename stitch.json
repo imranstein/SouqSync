@@ -3,6 +3,8 @@
   "title": "SoukSync Web Landing and Dashboard",
   "screens": {
     "landing": "8fb87c83aa6b451e9da253dd282d46e1",
-    "dashboard": "6582494c066943ea9c7a68355381bd07"
+    "dashboard": "6582494c066943ea9c7a68355381bd07",
+    "credit": "4e6260ce6610430988e623e025549f7f",
+    "inventory": "acbaa58b57004c6e98631cd03636e761"
   }
 }
