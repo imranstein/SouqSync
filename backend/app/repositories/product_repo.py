@@ -28,20 +28,28 @@ class ProductRepository:
         page: int = 1,
         per_page: int = 20,
     ) -> tuple[list[Product], int]:
-        base = select(Product).where(Product.is_active.is_(True))
+        # Optimization: Build where clauses separately to reuse them in both
+        # the count query and the rows query, avoiding a subquery for the count.
+        where_clauses = [Product.is_active.is_(True)]
 
         if distributor_id is not None:
-            base = base.where(Product.distributor_id == distributor_id)
+            where_clauses.append(Product.distributor_id == distributor_id)
         if category is not None:
-            base = base.where(Product.category == category)
+            where_clauses.append(Product.category == category)
         if search is not None:
-            base = base.where(Product.name.ilike(f"%{search}%"))
+            where_clauses.append(Product.name.ilike(f"%{search}%"))
 
-        count_stmt = select(func.count()).select_from(base.subquery())
+        count_stmt = select(func.count()).select_from(Product).where(*where_clauses)
         total: int = (await self._session.execute(count_stmt)).scalar_one()
 
         offset = (page - 1) * per_page
-        rows_stmt = base.order_by(Product.created_at.desc()).offset(offset).limit(per_page)
+        rows_stmt = (
+            select(Product)
+            .where(*where_clauses)
+            .order_by(Product.created_at.desc())
+            .offset(offset)
+            .limit(per_page)
+        )
         rows = (await self._session.execute(rows_stmt)).scalars().all()
 
         return list(rows), total
