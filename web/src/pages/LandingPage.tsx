@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-/* Refined, modern palette — no Stitch navy/orange. Light, confident, 2025 SaaS feel. */
+/* Modern palette using teal and slate colors. */
 const SLATE_900 = '#0f172a'
 const SLATE_600 = '#475569'
 const SLATE_400 = '#94a3b8'
