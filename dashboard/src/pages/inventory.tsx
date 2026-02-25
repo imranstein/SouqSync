@@ -265,6 +265,7 @@ export default function InventoryPage() {
             <input
               type="text"
               placeholder="Search products…"
+              aria-label="Search products"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm text-dark placeholder:text-gray-400 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -274,6 +275,7 @@ export default function InventoryPage() {
             value={categoryFilter}
             onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
             className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-dark ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-primary/40"
+            aria-label="Filter by category"
           >
             {CATEGORIES.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
@@ -334,6 +336,7 @@ export default function InventoryPage() {
                       <th
                         key={field}
                         onClick={() => toggleSort(field)}
+                        aria-sort={sortField === field ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
                         className={`cursor-pointer select-none px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-dark ${
                           field === 'price' ? 'text-right' : ''
                         }`}
@@ -375,6 +378,7 @@ export default function InventoryPage() {
                             onClick={() => openEditModal(p)}
                             className="rounded-md p-1.5 text-gray-400 transition hover:bg-primary/10 hover:text-primary"
                             title="Edit"
+                            aria-label={`Edit ${p.name}`}
                           >
                             <EditIcon />
                           </button>
@@ -382,6 +386,7 @@ export default function InventoryPage() {
                             onClick={() => setDeleteTarget(p)}
                             className="rounded-md p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
                             title="Delete"
+                            aria-label={`Delete ${p.name}`}
                           >
                             <TrashIcon />
                           </button>
@@ -546,7 +551,7 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 function Spinner() {
   return (
-    <svg className="h-5 w-5 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
+    <svg aria-hidden="true" className="h-5 w-5 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
     </svg>
@@ -559,7 +564,7 @@ function Spinner() {
 
 function PlusIcon() {
   return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg>
   );
@@ -567,7 +572,7 @@ function PlusIcon() {
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg className={`h-4 w-4 ${className ?? ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+    <svg aria-hidden="true" className={`h-4 w-4 ${className ?? ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
   );
@@ -575,7 +580,7 @@ function SearchIcon({ className }: { className?: string }) {
 
 function EditIcon() {
   return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM19.5 7.125L16.862 4.487" />
     </svg>
   );
@@ -583,7 +588,7 @@ function EditIcon() {
 
 function TrashIcon() {
   return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
     </svg>
   );
@@ -591,7 +596,7 @@ function TrashIcon() {
 
 function DownloadIcon() {
   return (
-    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
     </svg>
   );
