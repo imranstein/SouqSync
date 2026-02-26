@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select, update
+from sqlalchemy.orm import noload
 
 from app.models.product import Product
 
@@ -28,20 +29,27 @@ class ProductRepository:
         page: int = 1,
         per_page: int = 20,
     ) -> tuple[list[Product], int]:
-        base = select(Product).where(Product.is_active.is_(True))
+        filters = [Product.is_active.is_(True)]
 
         if distributor_id is not None:
-            base = base.where(Product.distributor_id == distributor_id)
+            filters.append(Product.distributor_id == distributor_id)
         if category is not None:
-            base = base.where(Product.category == category)
+            filters.append(Product.category == category)
         if search is not None:
-            base = base.where(Product.name.ilike(f"%{search}%"))
+            filters.append(Product.name.ilike(f"%{search}%"))
 
-        count_stmt = select(func.count()).select_from(base.subquery())
+        count_stmt = select(func.count()).select_from(Product).where(*filters)
         total: int = (await self._session.execute(count_stmt)).scalar_one()
 
         offset = (page - 1) * per_page
-        rows_stmt = base.order_by(Product.created_at.desc()).offset(offset).limit(per_page)
+        rows_stmt = (
+            select(Product)
+            .where(*filters)
+            .options(noload(Product.distributor), noload(Product.order_items))
+            .order_by(Product.created_at.desc())
+            .offset(offset)
+            .limit(per_page)
+        )
         rows = (await self._session.execute(rows_stmt)).scalars().all()
 
         return list(rows), total
