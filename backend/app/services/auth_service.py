@@ -28,6 +28,7 @@ logger = structlog.get_logger(__name__)
 OTP_TTL_SECONDS = 300  # 5 minutes
 RATE_LIMIT_WINDOW = 900  # 15 minutes
 RATE_LIMIT_MAX = 3
+MAX_OTP_ATTEMPTS = 5
 
 # ── In-memory fallback when Redis is unavailable ──────────────────────
 _memory_store: dict[str, Any] = {}
@@ -113,28 +114,61 @@ async def verify_otp(phone: str, code: str, db: AsyncSession) -> User:
     """Validate OTP, create user if new, return user."""
     redis = await _get_redis()
     otp_key = f"otp:{phone}"
+    attempts_key = f"otp:attempts:{phone}"
+
+    # 1. Check existing attempts
+    if redis:
+        attempts = await redis.get(attempts_key)
+        if attempts and int(attempts) >= MAX_OTP_ATTEMPTS:
+            await redis.aclose()
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many failed attempts. Request a new OTP.",
+            )
+    else:
+        attempts_entry = _mem_get(attempts_key)
+        if attempts_entry and int(attempts_entry) >= MAX_OTP_ATTEMPTS:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many failed attempts. Request a new OTP.",
+            )
+
+    # 2. Verify Code
+    valid_code = False
+    stored_hash = None
 
     if redis:
         stored_hash = await redis.get(otp_key)
-        if stored_hash and stored_hash == hash_otp(code):
-            await redis.delete(otp_key)
-            await redis.aclose()
-        else:
-            if redis:
-                await redis.aclose()
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired OTP",
-            )
     else:
         stored_hash = _mem_get(otp_key)
-        if stored_hash and stored_hash == hash_otp(code):
-            _memory_store.pop(otp_key, None)
+
+    if stored_hash and stored_hash == hash_otp(code):
+        valid_code = True
+
+    # 3. Handle Result
+    if valid_code:
+        # Success: Clear OTP and attempts
+        if redis:
+            await redis.delete(otp_key)
+            await redis.delete(attempts_key)
+            await redis.aclose()
         else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired OTP",
-            )
+            _memory_store.pop(otp_key, None)
+            _memory_store.pop(attempts_key, None)
+    else:
+        # Failure: Increment attempts
+        if redis:
+            count = await redis.incr(attempts_key)
+            if count == 1:
+                await redis.expire(attempts_key, OTP_TTL_SECONDS)
+            await redis.aclose()
+        else:
+            _mem_incr_with_ttl(attempts_key, OTP_TTL_SECONDS)
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired OTP",
+        )
 
     result = await db.execute(select(User).where(User.phone == phone))
     user = result.scalar_one_or_none()
