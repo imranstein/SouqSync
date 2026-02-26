@@ -67,7 +67,7 @@ export default function LoginPage() {
           </p>
 
           {error && (
-            <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
+            <div role="alert" aria-live="polite" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
               {error}
             </div>
           )}
@@ -80,6 +80,7 @@ export default function LoginPage() {
               <input
                 id="phone"
                 type="tel"
+                autoComplete="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+251 9XX XXX XXX"
@@ -92,7 +93,14 @@ export default function LoginPage() {
                 disabled={busy}
                 className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-light focus:ring-2 focus:ring-primary/40 focus:outline-none disabled:opacity-60"
               >
-                {busy ? <Spinner /> : 'Send OTP'}
+                {busy ? (
+                  <>
+                    <Spinner />
+                    <span className="sr-only">Sending...</span>
+                  </>
+                ) : (
+                  'Send OTP'
+                )}
               </button>
             </form>
           ) : (
@@ -104,6 +112,7 @@ export default function LoginPage() {
                 id="otp"
                 type="text"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
@@ -117,7 +126,14 @@ export default function LoginPage() {
                 disabled={busy || otp.length !== 6}
                 className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-light focus:ring-2 focus:ring-primary/40 focus:outline-none disabled:opacity-60"
               >
-                {busy ? <Spinner /> : 'Verify & Sign in'}
+                {busy ? (
+                  <>
+                    <Spinner />
+                    <span className="sr-only">Verifying...</span>
+                  </>
+                ) : (
+                  'Verify & Sign in'
+                )}
               </button>
               <button
                 type="button"
@@ -140,7 +156,7 @@ export default function LoginPage() {
 
 function Spinner() {
   return (
-    <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+    <svg aria-hidden="true" className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
     </svg>
