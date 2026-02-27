@@ -117,6 +117,39 @@ describe('InventoryPage', () => {
     }, { timeout: 1000 });
   });
 
+  it('clears search when clear button is clicked', async () => {
+    vi.mocked(api.get).mockResolvedValue(mockProductList);
+    render(<InventoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Product A')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+
+    // Clear button should appear
+    const clearButton = screen.getByLabelText('Clear search');
+    fireEvent.click(clearButton);
+
+    expect(searchInput).toHaveValue('');
+  });
+
+  it('clears search when Escape key is pressed', async () => {
+    vi.mocked(api.get).mockResolvedValue(mockProductList);
+    render(<InventoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Product A')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+    fireEvent.keyDown(searchInput, { key: 'Escape' });
+
+    expect(searchInput).toHaveValue('');
+  });
+
   it('sorts products by different fields', async () => {
     vi.mocked(api.get).mockResolvedValue(mockProductList);
     render(<InventoryPage />);
@@ -219,7 +252,7 @@ describe('InventoryPage', () => {
         return element;
       }
       return originalCreateElement(tagName);
-    }) as any;
+    }) as unknown as typeof document.createElement;
 
     try {
       vi.mocked(api.get).mockResolvedValue(mockProductList);

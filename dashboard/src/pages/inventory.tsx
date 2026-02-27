@@ -267,8 +267,21 @@ export default function InventoryPage() {
               placeholder="Search products…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm text-dark placeholder:text-gray-400 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              onKeyDown={(e) => e.key === 'Escape' && setSearch('')}
+              className={`w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 text-sm text-dark placeholder:text-gray-400 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+                search ? 'pr-10' : 'pr-4'
+              }`}
             />
+            {search && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+              >
+                <XMarkIcon />
+              </button>
+            )}
           </div>
           <select
             value={categoryFilter}
@@ -549,6 +562,14 @@ function Spinner() {
     <svg className="h-5 w-5 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+}
+
+function XMarkIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }
