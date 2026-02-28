@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import random
+import secrets
 import string
 from datetime import datetime, timezone
 from typing import Any
@@ -214,9 +214,7 @@ async def _show_cart(chat_id: int, state: ConversationState) -> None:
     items_text = "\n".join(f"  • {i['name']} x{i['qty']} — ETB {i['price']}" for i in state.cart)
     total = sum(i["price"] * i["qty"] for i in state.cart)
     state.step = ConversationStep.CART_REVIEW
-    await tg.send_message(
-        chat_id, t("cart_summary", state.language, items=items_text, total=str(total))
-    )
+    await tg.send_message(chat_id, t("cart_summary", state.language, items=items_text, total=str(total)))
 
 
 async def _cart_action(chat_id: int, state: ConversationState, lower: str) -> None:
@@ -270,5 +268,5 @@ async def _payment_choice(chat_id: int, state: ConversationState, text: str) -> 
 
 def _generate_order_id() -> str:
     date_part = datetime.now(tz=timezone.utc).strftime("%Y%m%d")
-    rand_part = "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    rand_part = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))
     return f"SS-{date_part}-{rand_part}"
