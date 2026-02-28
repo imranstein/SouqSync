@@ -163,7 +163,7 @@ describe('InventoryPage', () => {
     });
 
     // Click next page
-    const nextButton = screen.getByRole('button', { name: /next/i });
+    const nextButton = screen.getByRole('button', { name: /next/i }) as HTMLButtonElement;
     if (nextButton && !nextButton.disabled) {
       fireEvent.click(nextButton);
 
@@ -204,11 +204,11 @@ describe('InventoryPage', () => {
     const mockRevokeObjectURL = vi.fn();
     const mockClick = vi.fn();
     
-    const originalCreateObjectURL = global.URL.createObjectURL;
-    const originalRevokeObjectURL = global.URL.revokeObjectURL;
+    const originalCreateObjectURL = window.URL.createObjectURL;
+    const originalRevokeObjectURL = window.URL.revokeObjectURL;
     
-    global.URL.createObjectURL = mockCreateObjectURL;
-    global.URL.revokeObjectURL = mockRevokeObjectURL;
+    window.URL.createObjectURL = mockCreateObjectURL;
+    window.URL.revokeObjectURL = mockRevokeObjectURL;
 
     // Mock document.createElement
     const originalCreateElement = document.createElement.bind(document);
@@ -219,7 +219,7 @@ describe('InventoryPage', () => {
         return element;
       }
       return originalCreateElement(tagName);
-    }) as any;
+    }) as unknown as (tagName: string) => HTMLElement;
 
     try {
       vi.mocked(api.get).mockResolvedValue(mockProductList);
@@ -240,8 +240,8 @@ describe('InventoryPage', () => {
       });
     } finally {
       // Restore all mocks to maintain test isolation
-      global.URL.createObjectURL = originalCreateObjectURL;
-      global.URL.revokeObjectURL = originalRevokeObjectURL;
+      window.URL.createObjectURL = originalCreateObjectURL;
+      window.URL.revokeObjectURL = originalRevokeObjectURL;
       document.createElement = originalCreateElement;
     }
   });

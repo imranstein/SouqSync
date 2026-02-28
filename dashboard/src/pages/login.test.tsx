@@ -71,7 +71,7 @@ describe('LoginPage', () => {
     // Verify form validation would fail
     const form = phoneInput.closest('form') as HTMLFormElement;
     if (form) {
-      const isValid = form.checkValidity();
+      form.checkValidity();
       // In real browser, invalid pattern would make form invalid
       // In JSDOM, we at least verify the pattern attribute is set
       expect(phoneInput.hasAttribute('pattern')).toBe(true);

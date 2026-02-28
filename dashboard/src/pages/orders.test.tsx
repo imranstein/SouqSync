@@ -183,7 +183,7 @@ describe('OrdersPage', () => {
     });
 
     // Click next page
-    const nextButton = screen.getByRole('button', { name: /next/i });
+    const nextButton = screen.getByRole('button', { name: /next/i }) as HTMLButtonElement;
     if (nextButton && !nextButton.disabled) {
       fireEvent.click(nextButton);
 
