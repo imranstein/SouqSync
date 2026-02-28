@@ -77,7 +77,8 @@ class RequireRole:
         self.roles = roles
 
     async def __call__(
-        self, current_user: User = Depends(get_current_user),  # noqa: B008
+        self,
+        current_user: User = Depends(get_current_user),  # noqa: B008
     ) -> User:
         if current_user.role.value not in self.roles:
             raise HTTPException(

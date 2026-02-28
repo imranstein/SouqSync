@@ -1,0 +1,3 @@
+## 2024-05-18 - SQLAlchemy Count Optimization for Pagination
+**Learning:** Using `select_from(base.subquery())` for pagination count queries creates a huge performance bottleneck in SQLAlchemy because the database engine is forced to execute a nested subquery containing the full list structure (joins, etc.) before counting. This wastes resources and ignores potential direct index hits on the primary table.
+**Action:** When counting records for list endpoint pagination, always construct a separate, direct count query against the base model (e.g., `select(func.count()).select_from(Model)`) and apply the *exact same* `.where()` filters to it as the main query, entirely avoiding `subquery()`.

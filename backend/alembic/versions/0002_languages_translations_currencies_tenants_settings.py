@@ -5,6 +5,7 @@ Revises: 0001
 Create Date: 2026-02-24
 
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -101,7 +102,10 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["language_id"], ["languages.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["tenant_id"], ["tenants.id"], ondelete="CASCADE"),
         sa.UniqueConstraint(
-            "language_id", "tenant_id", "namespace", "key",
+            "language_id",
+            "tenant_id",
+            "namespace",
+            "key",
             name="uq_translations_lang_tenant_ns_key",
         ),
     )
@@ -163,8 +167,12 @@ def upgrade() -> None:
     # --- add tenant_id to users ---
     op.add_column("users", sa.Column("tenant_id", sa.Uuid(), nullable=True))
     op.create_foreign_key(
-        "fk_users_tenant_id", "users", "tenants",
-        ["tenant_id"], ["id"], ondelete="SET NULL",
+        "fk_users_tenant_id",
+        "users",
+        "tenants",
+        ["tenant_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
     op.create_index("ix_users_tenant_id", "users", ["tenant_id"])
 

@@ -68,15 +68,25 @@ PRODUCTS: list[dict[str, object]] = [
 LANGUAGES = [
     {"code": "en", "name": "English", "native_name": "English", "is_rtl": False, "is_default": True, "sort_order": 1},
     {"code": "am", "name": "Amharic", "native_name": "አማርኛ", "is_rtl": False, "is_default": False, "sort_order": 2},
-    {"code": "om", "name": "Oromifa", "native_name": "Afaan Oromoo", "is_rtl": False,
-     "is_default": False, "sort_order": 3},
-    {"code": "sid", "name": "Sidama", "native_name": "Sidámo", "is_rtl": False,
-     "is_default": False, "sort_order": 4},
-    {"code": "ti", "name": "Tigrigna", "native_name": "ትግርኛ", "is_rtl": False,
-     "is_default": False, "sort_order": 5},
+    {
+        "code": "om",
+        "name": "Oromifa",
+        "native_name": "Afaan Oromoo",
+        "is_rtl": False,
+        "is_default": False,
+        "sort_order": 3,
+    },
+    {"code": "sid", "name": "Sidama", "native_name": "Sidámo", "is_rtl": False, "is_default": False, "sort_order": 4},
+    {"code": "ti", "name": "Tigrigna", "native_name": "ትግርኛ", "is_rtl": False, "is_default": False, "sort_order": 5},
     {"code": "ar", "name": "Arabic", "native_name": "العربية", "is_rtl": True, "is_default": False, "sort_order": 6},
-    {"code": "sw", "name": "Swahili", "native_name": "Kiswahili", "is_rtl": False,
-     "is_default": False, "sort_order": 7},
+    {
+        "code": "sw",
+        "name": "Swahili",
+        "native_name": "Kiswahili",
+        "is_rtl": False,
+        "is_default": False,
+        "sort_order": 7,
+    },
 ]
 
 CURRENCIES = [
@@ -169,9 +179,7 @@ async def seed_i18n(session: AsyncSession) -> None:
 
 async def seed(session: AsyncSession) -> None:
     """Insert sample data. Skips if distributor phone already exists."""
-    existing = await session.execute(
-        select(User).where(User.phone == "+251911000001")
-    )
+    existing = await session.execute(select(User).where(User.phone == "+251911000001"))
     if existing.scalar_one_or_none() is not None:
         print("Seed data already exists — skipping.")
         return
@@ -180,9 +188,12 @@ async def seed(session: AsyncSession) -> None:
     default_tenant = (await session.execute(select(Tenant).where(Tenant.slug == "default"))).scalar_one_or_none()
     if default_tenant is None:
         default_tenant = Tenant(
-        name="SoukSync Default", slug="default", locale="en",
-        currency_code="ETB", is_active=True,
-    )
+            name="SoukSync Default",
+            slug="default",
+            locale="en",
+            currency_code="ETB",
+            is_active=True,
+        )
         session.add(default_tenant)
         await session.flush()
 
@@ -226,9 +237,9 @@ async def seed(session: AsyncSession) -> None:
 
     # ── Sample Order (3 items) ──
     items_data = [
-        (product_objs[0], 10),   # Coca-Cola x10
-        (product_objs[12], 5),   # Omo Detergent x5
-        (product_objs[22], 3),   # Teff Flour x3
+        (product_objs[0], 10),  # Coca-Cola x10
+        (product_objs[12], 5),  # Omo Detergent x5
+        (product_objs[22], 3),  # Teff Flour x3
     ]
     total = sum(p.price * qty for p, qty in items_data)
 

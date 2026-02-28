@@ -29,15 +29,19 @@ class ProductRepository:
         per_page: int = 20,
     ) -> tuple[list[Product], int]:
         base = select(Product).where(Product.is_active.is_(True))
+        count_stmt = select(func.count()).select_from(Product).where(Product.is_active.is_(True))
 
         if distributor_id is not None:
             base = base.where(Product.distributor_id == distributor_id)
+            count_stmt = count_stmt.where(Product.distributor_id == distributor_id)
         if category is not None:
             base = base.where(Product.category == category)
+            count_stmt = count_stmt.where(Product.category == category)
         if search is not None:
             base = base.where(Product.name.ilike(f"%{search}%"))
+            count_stmt = count_stmt.where(Product.name.ilike(f"%{search}%"))
 
-        count_stmt = select(func.count()).select_from(base.subquery())
+        # ⚡ Bolt: Use direct count query instead of subquery for better performance
         total: int = (await self._session.execute(count_stmt)).scalar_one()
 
         offset = (page - 1) * per_page
@@ -86,11 +90,7 @@ class ProductRepository:
 
     async def delete_product(self, product_id: uuid.UUID) -> bool:
         """Soft-delete: set is_active=False."""
-        stmt = (
-            update(Product)
-            .where(Product.id == product_id, Product.is_active.is_(True))
-            .values(is_active=False)
-        )
+        stmt = update(Product).where(Product.id == product_id, Product.is_active.is_(True)).values(is_active=False)
         result = await self._session.execute(stmt)
         await self._session.flush()
         return result.rowcount > 0  # type: ignore[return-value]
