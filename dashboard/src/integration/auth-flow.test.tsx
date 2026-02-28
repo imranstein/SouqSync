@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+
 import { AuthProvider } from '../contexts/auth-context';
 import { I18nProvider } from '../contexts/i18n-context';
 import { router } from '../router';
@@ -37,11 +37,6 @@ describe('Auth Flow Integration', () => {
   it('redirects unauthenticated users to login', async () => {
     vi.mocked(api.getAccessToken).mockReturnValue(null);
     vi.mocked(api.get).mockResolvedValue({ items: [], total: 0 });
-
-    const testRouter = {
-      ...router,
-      state: { location: { pathname: '/dashboard' } },
-    };
 
     render(
       <AuthProvider>
