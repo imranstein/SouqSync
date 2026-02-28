@@ -39,10 +39,12 @@ class Order(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "orders"
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id"), nullable=False,
+        ForeignKey("users.id"),
+        nullable=False,
     )
     distributor_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id"), nullable=False,
+        ForeignKey("users.id"),
+        nullable=False,
     )
     status: Mapped[OrderStatus] = mapped_column(
         Enum(OrderStatus, name="order_status", native_enum=False),
@@ -50,16 +52,21 @@ class Order(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
     total: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False,
+        Numeric(12, 2),
+        nullable=False,
     )
     delivery_fee: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), default=0, nullable=False,
+        Numeric(10, 2),
+        default=0,
+        nullable=False,
     )
     payment_method: Mapped[str | None] = mapped_column(
-        String(50), nullable=True,
+        String(50),
+        nullable=True,
     )
     notes: Mapped[str | None] = mapped_column(
-        String(1000), nullable=True,
+        String(1000),
+        nullable=True,
     )
 
     user: Mapped[User] = relationship(
@@ -89,14 +96,17 @@ class OrderItem(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "order_items"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("orders.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("orders.id", ondelete="CASCADE"),
+        nullable=False,
     )
     product_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("products.id"), nullable=False,
+        ForeignKey("products.id"),
+        nullable=False,
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_price: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), nullable=False,
+        Numeric(10, 2),
+        nullable=False,
     )
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
@@ -105,10 +115,14 @@ class OrderItem(UUIDPrimaryKeyMixin, Base):
     )
 
     order: Mapped[Order] = relationship(
-        "Order", back_populates="items", lazy="selectin",
+        "Order",
+        back_populates="items",
+        lazy="selectin",
     )
     product: Mapped[Product] = relationship(
-        "Product", back_populates="order_items", lazy="selectin",
+        "Product",
+        back_populates="order_items",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

@@ -40,5 +40,6 @@ class TranslationListResponse(BaseModel):
 
 class TranslationMapResponse(BaseModel):
     """Namespace key-value map for a language (tenant-aware)."""
+
     namespace: str
     translations: dict[str, str]

@@ -102,9 +102,8 @@ async def update_translation(
     tr = await tr_repo.get_by_id(translation_id)
     if tr is None:
         raise NotFoundError("Translation")
-    if (
-        current_user.role.value != "super_admin"
-        and (current_user.tenant_id is None or tr.tenant_id != current_user.tenant_id)
+    if current_user.role.value != "super_admin" and (
+        current_user.tenant_id is None or tr.tenant_id != current_user.tenant_id
     ):
         raise NotFoundError("Translation")
     await tr_repo.update(tr, body.value)

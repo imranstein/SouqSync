@@ -214,9 +214,7 @@ async def _show_cart(chat_id: int, state: ConversationState) -> None:
     items_text = "\n".join(f"  • {i['name']} x{i['qty']} — ETB {i['price']}" for i in state.cart)
     total = sum(i["price"] * i["qty"] for i in state.cart)
     state.step = ConversationStep.CART_REVIEW
-    await tg.send_message(
-        chat_id, t("cart_summary", state.language, items=items_text, total=str(total))
-    )
+    await tg.send_message(chat_id, t("cart_summary", state.language, items=items_text, total=str(total)))
 
 
 async def _cart_action(chat_id: int, state: ConversationState, lower: str) -> None:

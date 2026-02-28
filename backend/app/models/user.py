@@ -29,7 +29,10 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
     phone: Mapped[str] = mapped_column(
-        String(20), unique=True, index=True, nullable=False,
+        String(20),
+        unique=True,
+        index=True,
+        nullable=False,
     )
     name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[UserRole] = mapped_column(
@@ -38,19 +41,27 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
     language_pref: Mapped[str] = mapped_column(
-        String(10), default="am", nullable=False,
+        String(10),
+        default="am",
+        nullable=False,
     )
     telegram_chat_id: Mapped[int | None] = mapped_column(
-        BigInteger, unique=True, nullable=True,
+        BigInteger,
+        unique=True,
+        nullable=True,
     )
     distributor_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True,
+        ForeignKey("users.id"),
+        nullable=True,
     )
     tenant_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("tenants.id"), nullable=True,
+        ForeignKey("tenants.id"),
+        nullable=True,
     )
     is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False,
+        Boolean,
+        default=True,
+        nullable=False,
     )
 
     # Self-referential: kiosk_owner → distributor
@@ -67,7 +78,9 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
 
     products: Mapped[list[Product]] = relationship(
-        "Product", back_populates="distributor", lazy="selectin",
+        "Product",
+        back_populates="distributor",
+        lazy="selectin",
     )
     orders: Mapped[list[Order]] = relationship(
         "Order",
@@ -82,10 +95,15 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         lazy="selectin",
     )
     credit_profile: Mapped[CreditProfile | None] = relationship(
-        "CreditProfile", back_populates="user", uselist=False, lazy="selectin",
+        "CreditProfile",
+        back_populates="user",
+        uselist=False,
+        lazy="selectin",
     )
     tenant: Mapped[Tenant | None] = relationship(
-        "Tenant", back_populates="users", lazy="selectin",
+        "Tenant",
+        back_populates="users",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

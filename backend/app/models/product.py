@@ -21,24 +21,34 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     sku: Mapped[str | None] = mapped_column(
-        String(50), unique=True, nullable=True,
+        String(50),
+        unique=True,
+        nullable=True,
     )
     price: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), nullable=False,
+        Numeric(10, 2),
+        nullable=False,
     )
     category: Mapped[str | None] = mapped_column(String(50), nullable=True)
     distributor_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id"), nullable=False,
+        ForeignKey("users.id"),
+        nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False,
+        Boolean,
+        default=True,
+        nullable=False,
     )
 
     distributor: Mapped[User] = relationship(
-        "User", back_populates="products", lazy="selectin",
+        "User",
+        back_populates="products",
+        lazy="selectin",
     )
     order_items: Mapped[list[OrderItem]] = relationship(
-        "OrderItem", back_populates="product", lazy="selectin",
+        "OrderItem",
+        back_populates="product",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

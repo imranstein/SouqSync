@@ -24,10 +24,13 @@ class LanguageRepository:
         active_only: bool = True,
     ) -> tuple[list[Language], int]:
         base = select(Language)
+        count_stmt = select(func.count()).select_from(Language)
         if active_only:
             base = base.where(Language.is_active.is_(True))
+            count_stmt = count_stmt.where(Language.is_active.is_(True))
         base = base.order_by(Language.sort_order, Language.code)
-        count_stmt = select(func.count()).select_from(base.subquery())
+
+        # ⚡ Bolt: Use direct count query instead of subquery for better performance
         total: int = (await self._session.execute(count_stmt)).scalar_one()
         result = await self._session.execute(base)
         return list(result.scalars().all()), total

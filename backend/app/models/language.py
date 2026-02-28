@@ -25,7 +25,9 @@ class Language(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     translations: Mapped[list[Translation]] = relationship(
-        "Translation", back_populates="language", lazy="selectin",
+        "Translation",
+        back_populates="language",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

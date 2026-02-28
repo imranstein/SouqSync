@@ -16,18 +16,18 @@ if TYPE_CHECKING:
 
 class Setting(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "settings"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "key", name="uq_settings_tenant_key"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "key", name="uq_settings_tenant_key"),)
 
     tenant_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=True,
     )
     key: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
 
     tenant: Mapped[Tenant | None] = relationship(
-        "Tenant", lazy="selectin",
+        "Tenant",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:

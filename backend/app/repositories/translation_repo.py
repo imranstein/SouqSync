@@ -27,25 +27,19 @@ class TranslationRepository:
     ) -> dict[str, str]:
         """Platform-wide first, then tenant overrides. tenant_id=None means platform only."""
         # Platform-wide (tenant_id IS NULL)
-        stmt_platform = (
-            select(Translation.key, Translation.value)
-            .where(
-                Translation.language_id == language_id,
-                Translation.namespace == namespace,
-                Translation.tenant_id.is_(None),
-            )
+        stmt_platform = select(Translation.key, Translation.value).where(
+            Translation.language_id == language_id,
+            Translation.namespace == namespace,
+            Translation.tenant_id.is_(None),
         )
         result = await self._session.execute(stmt_platform)
         out = {row[0]: row[1] for row in result.all()}
         # Tenant overrides (if tenant_id provided)
         if tenant_id is not None:
-            stmt_tenant = (
-                select(Translation.key, Translation.value)
-                .where(
-                    Translation.language_id == language_id,
-                    Translation.tenant_id == tenant_id,
-                    Translation.namespace == namespace,
-                )
+            stmt_tenant = select(Translation.key, Translation.value).where(
+                Translation.language_id == language_id,
+                Translation.tenant_id == tenant_id,
+                Translation.namespace == namespace,
             )
             result_tenant = await self._session.execute(stmt_tenant)
             for row in result_tenant.all():
@@ -62,14 +56,20 @@ class TranslationRepository:
         per_page: int = 50,
     ) -> tuple[list[Translation], int]:
         base = select(Translation)
+        count_stmt = select(func.count()).select_from(Translation)
         if language_id is not None:
             base = base.where(Translation.language_id == language_id)
+            count_stmt = count_stmt.where(Translation.language_id == language_id)
         if tenant_id is not None:
             base = base.where(Translation.tenant_id == tenant_id)
+            count_stmt = count_stmt.where(Translation.tenant_id == tenant_id)
         if namespace is not None:
             base = base.where(Translation.namespace == namespace)
-        count_stmt = select(func.count()).select_from(base.subquery())
+            count_stmt = count_stmt.where(Translation.namespace == namespace)
+
+        # ⚡ Bolt: Use direct count query instead of subquery for better performance
         total: int = (await self._session.execute(count_stmt)).scalar_one()
+
         base = base.order_by(Translation.namespace, Translation.key).offset((page - 1) * per_page).limit(per_page)
         result = await self._session.execute(base)
         return list(result.scalars().all()), total

@@ -36,6 +36,7 @@ class SettingListResponse(BaseModel):
 
 class BrandSettings(BaseModel):
     """Brand settings for a tenant (convenience shape)."""
+
     app_name: str | None = None
     logo_url: str | None = None
     primary_color: str | None = None
@@ -44,4 +45,5 @@ class BrandSettings(BaseModel):
 
 class FeatureFlagsResponse(BaseModel):
     """Feature flags as key -> enabled."""
+
     features: dict[str, bool]

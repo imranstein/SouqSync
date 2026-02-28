@@ -71,9 +71,7 @@ async def create_order(
         products[item.product_id] = product
 
     order_repo = OrderRepository(db)
-    order = await order_repo.create_order(
-        user_id=current_user.id, data=body, products=products
-    )
+    order = await order_repo.create_order(user_id=current_user.id, data=body, products=products)
     await db.commit()
     await db.refresh(order)
     return _order_to_response(order)

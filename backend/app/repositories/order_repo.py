@@ -70,15 +70,19 @@ class OrderRepository:
         base = select(Order).options(
             selectinload(Order.items).selectinload(OrderItem.product),
         )
+        count_q = select(func.count()).select_from(Order)
 
         if user_id is not None:
             base = base.where(Order.user_id == user_id)
+            count_q = count_q.where(Order.user_id == user_id)
         if distributor_id is not None:
             base = base.where(Order.distributor_id == distributor_id)
+            count_q = count_q.where(Order.distributor_id == distributor_id)
         if status is not None:
             base = base.where(Order.status == status)
+            count_q = count_q.where(Order.status == status)
 
-        count_q = select(func.count()).select_from(base.order_by(None).subquery())
+        # ⚡ Bolt: Use direct count query instead of subquery for better performance
         total: int = (await self._session.execute(count_q)).scalar_one()
 
         offset = (page - 1) * per_page
@@ -98,9 +102,7 @@ class OrderRepository:
         result = await self._session.execute(stmt)
         return result.scalars().first()
 
-    async def update_order_status(
-        self, order_id: uuid.UUID, new_status: str
-    ) -> Order:
+    async def update_order_status(self, order_id: uuid.UUID, new_status: str) -> Order:
         order = await self.get_order(order_id)
         if order is None:
             raise NotFoundError("Order")
@@ -112,9 +114,7 @@ class OrderRepository:
 
         allowed = VALID_TRANSITIONS.get(order.status.value, set())
         if target.value not in allowed:
-            raise ValidationError(
-                f"Cannot transition from {order.status.value} to {target.value}"
-            )
+            raise ValidationError(f"Cannot transition from {order.status.value} to {target.value}")
 
         order.status = target
         await self._session.flush()

@@ -23,7 +23,9 @@ class Tenant(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     users: Mapped[list[User]] = relationship(
-        "User", back_populates="tenant", lazy="selectin",
+        "User",
+        back_populates="tenant",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
